@@ -1,0 +1,46 @@
+## Interface: 38002
+## Title: 墨战年华
+## Title-zhCN: 墨战年华
+## Title-zhTW: 墨戰年華
+## Notes: 水墨风公会活动面板，提供可扩展的页面框架。
+## Notes-zhCN: 水墨风公会活动面板。\n左侧竖栏切换页面，右侧内容区留给具体功能填充。
+## Author: MoZhan
+## Version: 0.4.1
+## SavedVariables: MoZhanNianHuaDB
+## X-Category: Guild
+## X-Website: 
+
+# --- Core ---
+Core\Init.lua
+Core\Log.lua
+Core\Store.lua
+Core\Event.lua
+Core\Time.lua
+Core\Net.lua
+Core\Checkers.lua
+
+# --- App 门面 ---
+App\App.lua
+
+# --- Skin ---
+Skin\Init.lua
+Skin\Draw.lua
+Skin\Button.lua
+Skin\EditBox.lua
+Skin\Card.lua
+Skin\Scroll.lua
+Skin\Tab.lua
+Skin\Page.lua
+Skin\Window.lua
+
+# --- MainUI + Views ---
+MainUI\MainUI.lua
+Views\Activity.lua
+Views\Dkp.lua
+Views\Checkers.lua
+Views\Timer.lua
+Views\Roster.lua
+Views\Settings.lua
+
+# --- 组合根（仅留在根目录）---
+GameInit.lua
