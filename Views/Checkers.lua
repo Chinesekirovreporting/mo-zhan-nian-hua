@@ -45,7 +45,7 @@ local function ShortName(name)
 end
 
 local FACE_HINT = "不在对面：各跑空营，互不阻挡"
-local LINK_HINT = "连不上对方：需同队或同会"
+local LINK_HINT = "没收到回应：确认对方同队或同会"
 
 local function Hint(text)
 	if fsHint then fsHint:SetText(text or "") end
@@ -133,7 +133,7 @@ local function OnCellClick(id, button)
 	end
 
 	if G.phase ~= "play" then
-		Hint(G.phase == "wait" and "人齐并全员就绪后自动开局。" or "本局已结束，房主可点「重开」。")
+		Hint(G.phase == "wait" and "全员就绪后自动开局（两人即可）。" or "本局已结束，房主可点「重开」。")
 		return
 	end
 
@@ -336,7 +336,9 @@ local function RefreshSeats()
 	if G.lastError and now - (G.lastErrorAt or 0) <= 5 then
 		auto = G.lastError
 	elseif G.phase == "wait" and G.raceLost and now - (G.raceLostAt or 0) <= 6 then
-		auto = (G.SEAT_NAMES[G.raceLost] or "该") .. "号座被抢先，另选一座"
+		auto = (G.SEAT_NAMES[G.raceLost] or "该") .. "号座已归他人，请重新选座"
+	elseif G.hostSilent then
+		auto = "等不到房主：牌局可能已卡住"
 	elseif G.phase == "wait" and G.linkSuspect then
 		auto = LINK_HINT
 	elseif G.phase == "wait" and G:TwoSomeFacing() == false then
@@ -464,7 +466,7 @@ end
 UI:AddPage{
 	id       = "checkers",
 	title    = "六角跳棋",
-	subtitle = "六人围坐 · 占座满员并全部就绪即开局",
+	subtitle = "两人起坐 · 全员就绪即开局",
 	order    = 12,
 	build    = function(p, b)
 		BuildBoard(b)

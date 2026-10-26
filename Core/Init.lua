@@ -5,7 +5,7 @@
 local ADDON_NAME, MZ = ...
 
 MZ.ADDON   = ADDON_NAME
-MZ.VERSION = "0.4.1"
+MZ.VERSION = "0.4.2"
 
 -- 模块挂载点（各 Core\*.lua 往这里注册，App\App 再门面组装）
 MZ.Modules = MZ.Modules or {}

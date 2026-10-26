@@ -5,7 +5,7 @@
 ## Notes: 水墨风公会活动面板，提供可扩展的页面框架。
 ## Notes-zhCN: 水墨风公会活动面板。\n左侧竖栏切换页面，右侧内容区留给具体功能填充。
 ## Author: MoZhan
-## Version: 0.4.1
+## Version: 0.4.2
 ## SavedVariables: MoZhanNianHuaDB
 ## X-Category: Guild
 ## X-Website: 

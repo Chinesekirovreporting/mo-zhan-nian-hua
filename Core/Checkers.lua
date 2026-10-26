@@ -217,6 +217,7 @@ function G:Init()
 	self.firstSendAt = nil
 	self.lastHostAt  = nil
 	self.linkSuspect = false
+	self.hostSilent  = false
 	self.raceLost, self.raceLostAt = nil, nil
 	self.lastError, self.lastErrorAt = nil, nil
 	self:BuildDriver()
@@ -739,6 +740,15 @@ function G:Tick(elapsed)
 	local suspect = self:LinkSuspect()
 	if suspect ~= self.linkSuspect then
 		self.linkSuspect = suspect
+		self:Changed()
+	end
+
+	-- 对局中房主长时间没有快照：局面已经不会再动了，让页面说一句，
+	-- 别让人对着不动的棋盘干等（房主掉线时只有重启插件才能恢复）
+	local silent = (not self:IsHost()) and self.phase == "play"
+		and self.lastHostAt ~= nil and (now - self.lastHostAt > 20)
+	if silent ~= self.hostSilent then
+		self.hostSilent = silent
 		self:Changed()
 	end
 
