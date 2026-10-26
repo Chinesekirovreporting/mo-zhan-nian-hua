@@ -1,10 +1,11 @@
--- ============================================================
+﻿-- ============================================================
 -- View · 参战名单
 -- ============================================================
 local ADDON_NAME, MZ = ...
-local S = MZ.Skin
-local C = MZ.C
-local UI = MZ.UI
+local App = MZ.App
+local S = App.Skin
+local C = App.C
+local UI = App.UI
 
 UI:AddPage{
 	id       = "roster",
@@ -99,7 +100,7 @@ UI:AddPage{
 		refresh:SetScript("OnClick", Refresh)
 
 		-- 团队变化时自动刷新（仅本页可见时）
-		MZ.Event:On("GROUP_ROSTER_UPDATE", function()
+		App.Core.Event:On("GROUP_ROSTER_UPDATE", function()
 			if page:IsShown() then Refresh() end
 		end)
 

@@ -6,14 +6,16 @@
 local ADDON_NAME, MZ = ...
 
 local Event = {}
-MZ.Modules.Event = Event
+MZ.App._modules.Event = Event
 
 local driver = CreateFrame("Frame")
 local wowListeners = {}
 local msgListeners = {}
 
 local function ModLog()
-	return MZ.Log or (MZ.Modules and MZ.Modules.Log)
+	local App = MZ.App
+	if App.Core and App.Core.Log then return App.Core.Log end
+	return App._modules and App._modules.Log
 end
 
 local function SafeCall(fn, ...)

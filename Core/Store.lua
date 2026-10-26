@@ -4,7 +4,7 @@
 local ADDON_NAME, MZ = ...
 
 local Store = {}
-MZ.Modules.Store = Store
+MZ.App._modules.Store = Store
 
 local DEFAULTS = {
 	scale        = 1.0,

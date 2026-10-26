@@ -5,7 +5,7 @@
 local ADDON_NAME, MZ = ...
 
 local Time = {}
-MZ.Modules.Time = Time
+MZ.App._modules.Time = Time
 
 local driver = CreateFrame("Frame")
 driver:Hide()
@@ -14,7 +14,9 @@ local nextId = 0
 local jobs = {}
 
 local function ModLog()
-	return MZ.Log or (MZ.Modules and MZ.Modules.Log)
+	local App = MZ.App
+	if App.Core and App.Core.Log then return App.Core.Log end
+	return App._modules and App._modules.Log
 end
 
 local function Arm()

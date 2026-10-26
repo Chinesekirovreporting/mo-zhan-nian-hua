@@ -1,4 +1,4 @@
--- ============================================================
+﻿-- ============================================================
 -- View · 公会 DKP
 --   左：成员积分榜（公会名册 + 本地积分，可搜索 / 三种排序）
 --   右：选中成员记分（EP 加 / GP 扣）、快捷记分、张贴、撤销、流水
@@ -7,9 +7,10 @@
 -- 名册只取名单 / 等级 / 职业色，分数完全离线保存在本地存档。
 -- ============================================================
 local ADDON_NAME, MZ = ...
-local S = MZ.Skin
-local C = MZ.C
-local UI = MZ.UI
+local App = MZ.App
+local S = App.Skin
+local C = App.C
+local UI = App.UI
 
 local MAX_LOG  = 200      -- 流水上限（超出丢最旧）
 local SHOW_LOG = 4        -- 右侧显示的流水条数
@@ -19,7 +20,7 @@ local QUICK    = { 5, 10, 20, 50 } -- 快捷记分（左键加 EP / 右键扣 GP
 -- 数据层
 -- ------------------------------------------------------------
 local function DB()
-	local db = MZ.Store:Get()
+	local db = App.Core.Store:Get()
 	if type(db.dkp) ~= "table" then db.dkp = {} end
 	local d = db.dkp
 	if type(d.members) ~= "table" then d.members = {} end
@@ -156,7 +157,7 @@ UI:AddPage{
 		local LIST_W = W - SIDE_W - GAP
 		local INNER  = SIDE_W - 20
 
-		local sortBy    = MZ.Store:GetKey("dkpSort", "net")
+		local sortBy    = App.Core.Store:GetKey("dkpSort", "net")
 		local members   = {}
 		local selected  = nil
 		local searching = ""
@@ -562,12 +563,12 @@ UI:AddPage{
 
 		ApplyDelta = function(v)
 			if not selected then
-				MZ:Print("请先在左侧选择一位成员。")
+				App:Print("请先在左侧选择一位成员。")
 				return
 			end
 			v = tonumber(v)
 			if not v or v == 0 then
-				MZ:Print("请先填写要记的分值。")
+				App:Print("请先填写要记的分值。")
 				return
 			end
 
@@ -575,7 +576,7 @@ UI:AddPage{
 			AddEntry(selected, v, why)
 			Render()
 
-			MZ:Print(string.format("%s %s%d 分（%s）→ 现有 %d 分",
+			App:Print(string.format("%s %s%d 分（%s）→ 现有 %d 分",
 				selected, v > 0 and "+" or "", v,
 				why ~= "" and why or "未填原因", Net(selected)))
 		end
@@ -618,19 +619,19 @@ UI:AddPage{
 		sortBtn:SetLabel(SORT_LABEL[sortBy] or "净分 ↓")
 		sortBtn:SetScript("OnClick", function(self)
 			sortBy = SORT_NEXT[sortBy] or "net"
-			MZ.Store:Set("dkpSort", sortBy)
+			App.Core.Store:Set("dkpSort", sortBy)
 			self:SetLabel(SORT_LABEL[sortBy])
 			Render()
 		end)
 
 		syncBtn:SetScript("OnClick", function()
 			if not (IsInGuild and IsInGuild()) then
-				MZ:Print("当前不在公会中，只能查看本地记录。")
+				App:Print("当前不在公会中，只能查看本地记录。")
 				return
 			end
 			lastRequest = 0
 			Refresh(true)
-			MZ:Print("已请求刷新公会名册。")
+			App:Print("已请求刷新公会名册。")
 		end)
 
 		search:SetScript("OnTextChanged", function(self)
@@ -658,25 +659,25 @@ UI:AddPage{
 		undoBtn:SetScript("OnClick", function()
 			local last = UndoLast()
 			if not last then
-				MZ:Print("没有可撤销的记录。")
+				App:Print("没有可撤销的记录。")
 				return
 			end
 			Render()
-			MZ:Print(string.format("已撤销：%s %+d 分", last.name, last.delta))
+			App:Print(string.format("已撤销：%s %+d 分", last.name, last.delta))
 		end)
 
 		-- 张贴到公会：第一次点击进入确认态，3 秒内再点才真正发出
 		local postArmed = false
 		postBtn:SetScript("OnClick", function(self)
 			if not selected then
-				MZ:Print("请先在左侧选择一位成员。")
+				App:Print("请先在左侧选择一位成员。")
 				return
 			end
 
 			if not postArmed then
 				postArmed = true
 				self:SetLabel("再点一次确认")
-				MZ.Time:After(3, function()
+				App.Core.Time:After(3, function()
 					if postArmed then
 						postArmed = false
 						self:SetLabel("张贴到公会")
@@ -689,7 +690,7 @@ UI:AddPage{
 			self:SetLabel("张贴到公会")
 
 			if not (IsInGuild and IsInGuild()) then
-				MZ:Print("不在公会中，无法张贴。")
+				App:Print("不在公会中，无法张贴。")
 				return
 			end
 
@@ -699,13 +700,13 @@ UI:AddPage{
 		end)
 
 		-- ==================== 事件 ====================
-		MZ.Event:On("GUILD_ROSTER_UPDATE", function()
+		App.Core.Event:On("GUILD_ROSTER_UPDATE", function()
 			if page:IsShown() then Refresh(false) end
 		end)
-		MZ.Event:On("PLAYER_ENTERING_WORLD", function()
+		App.Core.Event:On("PLAYER_ENTERING_WORLD", function()
 			if page:IsShown() then Refresh(false) end
 		end)
-		MZ.Event:OnMsg("MZ_PAGE_CHANGED", function(a, b)
+		App.Core.Event:OnMsg("MZ_PAGE_CHANGED", function(a, b)
 			-- Event:Send 会把事件名当首个参数传进来，故也兼容只有一个参数的情况
 			local id = b or a
 			if id ~= "dkp" then return end

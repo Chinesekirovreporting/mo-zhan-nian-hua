@@ -1,8 +1,8 @@
--- ============================================================
+﻿-- ============================================================
 -- Skin · 卡片（纸面 + 墨线 + 标题 / 说明）
 -- ============================================================
 local ADDON_NAME, MZ = ...
-local S = MZ.Skin
+local S = MZ.App.Skin
 
 function S:Card(parent, height)
 	local card = CreateFrame("Frame", nil, parent)

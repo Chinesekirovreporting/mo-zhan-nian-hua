@@ -1,9 +1,9 @@
--- ============================================================
+﻿-- ============================================================
 -- Skin · 侧栏页签
 -- ============================================================
 local ADDON_NAME, MZ = ...
-local S = MZ.Skin
-local C = MZ.C
+local S = MZ.App.Skin
+local C = MZ.App.C
 
 function S:CreateSideTab(parent, height)
 	local tab = CreateFrame("Button", nil, parent)

@@ -7,8 +7,7 @@
 local ADDON_NAME, MZ = ...
 
 local Net = {}
-MZ.Modules.Net = Net
-MZ.Net = Net
+MZ.App._modules.Net = Net
 
 Net.PREFIX    = "MZCHK"
 Net.MAXLEN    = 240     -- 暴雪单包上限 255，留点余量
@@ -87,7 +86,7 @@ RegisterPrefix()
 -- 事件总线会把事件名放在参数首位，故第二个形参才是前缀
 -- 注意：本文件先于 App 门面加载，故用 Modules 里的原始事件表
 -- ------------------------------------------------------------
-local Event = MZ.Modules.Event
+local Event = MZ.App._modules.Event
 
 -- 多频道同时发送会让同一条包到达两次（比如既在队伍又在公会），
 -- 这里只对 Q| 开头的「请求包」去重：请求不幂等，重复会多执行一次。

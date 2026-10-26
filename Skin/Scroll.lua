@@ -1,9 +1,9 @@
--- ============================================================
+﻿-- ============================================================
 -- Skin · 滚动区（滚轮 + 右侧细墨条，不用暴雪原始滚动条）
 -- ============================================================
 local ADDON_NAME, MZ = ...
-local S = MZ.Skin
-local C = MZ.C
+local S = MZ.App.Skin
+local C = MZ.App.C
 
 function S:ScrollArea(parent)
 	local holder = CreateFrame("Frame", nil, parent)

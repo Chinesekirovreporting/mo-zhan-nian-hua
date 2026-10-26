@@ -1,13 +1,14 @@
--- ============================================================
+﻿-- ============================================================
 -- View · 六角跳棋页签
 --   左：星形棋盘  右：六个彩色座位 + 观战人数 + 准备 / 重开
 --   只做绘制与点击，规则、状态、联机全在 Core/Checkers
 -- ============================================================
 local ADDON_NAME, MZ = ...
-local S  = MZ.Skin
-local UI = MZ.UI
-local G  = MZ.Checkers
-local C  = MZ.C
+local App = MZ.App
+local S = App.Skin
+local UI = App.UI
+local G = App.Core.Checkers
+local C = App.C
 
 local CELL   = 21                 -- 横向一格像素
 local VSTEP  = CELL * 0.86603     -- 行距
@@ -475,21 +476,21 @@ UI:AddPage{
 		local function OnPanelShow()
 			G:Send("R")
 			Refresh()
-			if MZ.Net and not MZ.Net:Available() then
+			if App.Core.Net and not App.Core.Net:Available() then
 				Hint("未组队 / 未入公会：这一桌只有你自己看得见。")
 			end
 		end
 
 		-- 页签每次被切出来；主面板每次被打开，都重新要一次房主快照
 		p:HookScript("OnShow", OnPanelShow)
-		if MZ.frame then
-			MZ.frame:HookScript("OnShow", function() G:Send("R") end)
+		if App.UI.frame then
+			App.UI.frame:HookScript("OnShow", function() G:Send("R") end)
 		end
 		OnPanelShow()
 	end,
 }
 
-MZ.Event:OnMsg("MZ_CHECKERS_CHANGED", function()
+App.Core.Event:OnMsg("MZ_CHECKERS_CHANGED", function()
 	Refresh()
 end)
 
@@ -497,9 +498,9 @@ end)
 -- 斜杠直达
 -- ------------------------------------------------------------
 local function OpenCheckers()
-	if not MZ.frame then MZ:Build() end
-	if MZ.frame and not MZ.frame:IsShown() then MZ.frame:Show() end
-	MZ:ShowPage("checkers")
+	if not App.UI.frame then App.UI:Build() end
+	if App.UI.frame and not App.UI.frame:IsShown() then App.UI.frame:Show() end
+	App.UI:ShowPage("checkers")
 end
 
 SLASH_MZCHECKERS1 = "/跳棋"
@@ -509,13 +510,13 @@ SlashCmdList["MZCHECKERS"] = OpenCheckers
 -- 同桌两台机器对不上时，两边各敲一次 /跳棋诊断 就能看出断在哪
 local function Diag()
 	local function LogLine(msg)
-		local log = MZ.Log or (MZ.Modules and MZ.Modules.Log)
+		local log = App.Core.Log or (App._modules and App._modules.Log)
 		if log then log:Info(msg) end
 	end
 
 	local chans = "无"
-	if MZ.Net then
-		local list = MZ.Net:Channels()
+	if App.Core.Net then
+		local list = App.Core.Net:Channels()
 		if #list > 0 then chans = table.concat(list, "+") end
 	end
 

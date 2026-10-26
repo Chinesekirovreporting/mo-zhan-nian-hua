@@ -3,18 +3,17 @@
 -- 页面注册 / 切换 / 缩放 / 命令；绘制全部委托 Skin
 -- ============================================================
 local ADDON_NAME, MZ = ...
-local S = MZ.Skin
+local App = MZ.App
+local S = App.Skin
 local L = S.Layout
+local Core = App.Core
 
 local UI = {}
-MZ.UI = UI
+App.UI = UI
 
 local frame
 local pages = {}
 
--- ------------------------------------------------------------
--- 页面注册
--- ------------------------------------------------------------
 function UI:AddPage(def)
 	if type(def) ~= "table" or not def.id then return end
 	for _, p in ipairs(pages) do
@@ -46,13 +45,6 @@ function UI:PageCount()
 	return #pages
 end
 
-function MZ:AddPage(def) return UI:AddPage(def) end
-function MZ:GetPage(id) return UI:GetPage(id) end
-function MZ:GetSortedPages() return UI:GetSortedPages() end
-
--- ------------------------------------------------------------
--- 页面骨架（绘制在 Skin.Page）
--- ------------------------------------------------------------
 local function BuildPage(def)
 	if def.frame then return def.frame end
 
@@ -61,17 +53,14 @@ local function BuildPage(def)
 	def.body = body
 
 	if def.build then
-		local ok, err = pcall(def.build, page, body, MZ)
+		local ok, err = pcall(def.build, page, body, App)
 		if not ok then
-			MZ.Log:Error("页面 " .. tostring(def.id) .. " 构建失败：" .. tostring(err))
+			Core.Log:Error("页面 " .. tostring(def.id) .. " 构建失败：" .. tostring(err))
 		end
 	end
 	return page
 end
 
--- ------------------------------------------------------------
--- 侧栏页签
--- ------------------------------------------------------------
 function UI:BuildTabs()
 	if not frame then return end
 
@@ -124,9 +113,6 @@ function UI:UpdateTabs()
 	end
 end
 
--- ------------------------------------------------------------
--- 页面切换
--- ------------------------------------------------------------
 function UI:ShowPage(id)
 	if not frame then return end
 
@@ -144,24 +130,20 @@ function UI:ShowPage(id)
 	def.frame:Show()
 
 	self.activePage = def.id
-	MZ.activePage = def.id
-	MZ.Store:Set("lastPage", def.id)
+	Core.Store:Set("lastPage", def.id)
 	self:UpdateTabs()
-	MZ.Event:Send("MZ_PAGE_CHANGED", def.id)
+	Core.Event:Send("MZ_PAGE_CHANGED", def.id)
 end
 
--- ------------------------------------------------------------
--- 缩放 / 位置
--- ------------------------------------------------------------
 function UI:SetScale(value)
 	value = math.max(0.75, math.min(1.30, value))
-	MZ.Store:Set("scale", value)
+	Core.Store:Set("scale", value)
 	if frame then frame:SetScale(value) end
 	return value
 end
 
 function UI:ResetPosition()
-	MZ.Store:Update({ point = nil, scale = 1.0 })
+	Core.Store:Update({ point = nil, scale = 1.0 })
 	if frame then
 		frame:ClearAllPoints()
 		frame:SetPoint("CENTER", UIParent, "CENTER", 0, 0)
@@ -169,46 +151,33 @@ function UI:ResetPosition()
 	end
 end
 
-function MZ:SetScale(value) return UI:SetScale(value) end
-function MZ:ResetPosition() return UI:ResetPosition() end
-function MZ:ShowPage(id) return UI:ShowPage(id) end
-
--- ------------------------------------------------------------
--- 主窗口（绘制在 Skin.Window）
--- ------------------------------------------------------------
 function UI:Build()
 	if frame then return frame end
 
-	local db = MZ.Store:Get()
+	local db = Core.Store:Get()
 	frame = S:BuildMainWindow{
 		name   = "MoZhanNianHuaFrame",
 		point  = db.point,
 		scale  = db.scale or 1.0,
 		onDragStop = function(point, relPoint, x, y)
-			MZ.Store:Set("point", { point = point, relPoint = relPoint, x = x, y = y })
+			Core.Store:Set("point", { point = point, relPoint = relPoint, x = x, y = y })
 		end,
 	}
 
 	table.insert(UISpecialFrames, "MoZhanNianHuaFrame")
 
 	self.frame = frame
-	MZ.frame = frame
 	self:BuildTabs()
 	return frame
 end
 
-function MZ:Build() return UI:Build() end
-
--- ------------------------------------------------------------
--- 开关 / 斜杠命令
--- ------------------------------------------------------------
 function UI:Toggle()
 	if not self.frame then self:Build() end
 	if frame:IsShown() then
 		frame:Hide()
 	else
 		frame:Show()
-		self:ShowPage(MZ.Store:GetKey("lastPage", "activity"))
+		self:ShowPage(Core.Store:GetKey("lastPage", "activity"))
 	end
 end
 
@@ -216,16 +185,13 @@ function UI:Slash(msg)
 	msg = string.lower(strtrim(msg or ""))
 	if msg == "reset" then
 		self:ResetPosition()
-		MZ.Log:Info("位置与缩放已重置。")
+		Core.Log:Info("位置与缩放已重置。")
 	elseif msg == "test" then
-		MZ.Log:Info("版本 " .. MZ.VERSION .. "，已注册页面 " .. self:PageCount() .. " 个。")
+		Core.Log:Info("版本 " .. App.VERSION .. "，已注册页面 " .. self:PageCount() .. " 个。")
 	else
 		self:Toggle()
 	end
 end
-
-function MZ:Toggle() return UI:Toggle() end
-function MZ:Slash(msg) return UI:Slash(msg) end
 
 SLASH_MOZHANNIANHUA1 = "/mz"
 SLASH_MOZHANNIANHUA2 = "/mznh"

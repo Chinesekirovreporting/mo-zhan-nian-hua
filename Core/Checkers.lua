@@ -5,11 +5,11 @@
 -- ============================================================
 local ADDON_NAME, MZ = ...
 
-local Net = MZ.Net
-local Log = MZ.Modules.Log
+local Net = MZ.App._modules.Net
+local Log = MZ.App._modules.Log
 
 local G = {}
-MZ.Checkers = G
+MZ.App._modules.Checkers = G
 
 -- ------------------------------------------------------------
 -- 1 · 棋盘几何
@@ -220,6 +220,10 @@ function G:Init()
 	self.hostSilent  = false
 	self.raceLost, self.raceLostAt = nil, nil
 	self.lastError, self.lastErrorAt = nil, nil
+	-- 补报 / 重同步的计时器
+	self.wantSeat, self.reclaimN, self.reclaimAt = nil, 0, nil
+	self.lastClaim, self.lastSync = 0, 0
+	self.myReady = false
 	self:BuildDriver()
 end
 
@@ -231,7 +235,8 @@ function G:BuildDriver()
 end
 
 function G:Changed()
-	local ev = MZ.Event or MZ.Modules.Event
+	local App = MZ.App
+	local ev = (App.Core and App.Core.Event) or App._modules.Event
 	if ev then ev:Send("MZ_CHECKERS_CHANGED") end
 end
 
@@ -408,7 +413,14 @@ function G:OnMessage(text, sender)
 			self:Changed()
 		end
 	elseif tag == "R" then
-		if self:IsHost() then self:Broadcast() end
+		if self:IsHost() then
+			-- 请求方带着它手里的序号（R|<appliedB>）。它可能卡在比我们更大的号上
+			-- （它自己当房主时广播过），把号拖过来，下一包的 seq 才越得过去。
+			local want = tonumber(p[2]) or 0
+			if want > (self.appliedH or 0) then self.appliedH = want end
+			if want > (self.appliedB or 0) then self.appliedB = want end
+			self:Broadcast()
+		end
 	end
 end
 
@@ -424,9 +436,19 @@ function G:OnClaim(p, sender)
 		local idx = tonumber(p[3])
 		if not idx or idx < 1 or idx > 6 then return end
 		if self.phase ~= "wait" then return end
+		local mine = self:SeatOf(sender)
+		if mine then
+			-- 同一个人重复报同一个座位：这是定时补报（那条声明丢过一次），
+			-- 顺手把准备态一起同步过来，别让房主那边永远停在「未准备」。
+			if mine == idx and self.seats[idx] then
+				self.seats[idx].seen  = GetTime()
+				self.seats[idx].ready = (p[4] == "1")
+				self:Changed()
+			end
+			return
+		end
 		if self.seats[idx] then return end
-		if self:SeatOf(sender) then return end
-		self.seats[idx] = { name = sender, ready = false, seen = GetTime() }
+		self.seats[idx] = { name = sender, ready = (p[4] == "1"), seen = GetTime() }
 		self:Changed()
 	elseif what == "UP" then
 		if self.phase ~= "wait" then return end
@@ -478,6 +500,7 @@ function G:OnHostState(p, sender)
 	self.appliedH = seq
 
 	local mineBefore = self:MySeat()
+	local wasPlaying = (self.phase == "play" or self.phase == "over")
 
 	local phase  = p[3]
 	local turn   = tonumber(p[4]) or 0
@@ -486,6 +509,9 @@ function G:OnHostState(p, sender)
 	local names  = { strsplit(",", p[7] or "") }
 
 	self.phase  = (phase == "play" or phase == "over") and phase or "wait"
+	-- 房主把桌子收回大厅（新一局）：我自己那份「已准备」也要撤掉，
+	-- 否则下一次心跳补报会把我立刻又抬成已准备，刚重开就自动开局
+	if wasPlaying and self.phase == "wait" then self.myReady = false end
 	local oldTurn = self.turn
 	self.turn   = (turn > 0) and turn or nil
 	self.winner = (winner > 0) and winner or nil
@@ -506,17 +532,31 @@ function G:OnHostState(p, sender)
 		end
 	end
 
-	-- 自己的座位没了（抢座输给别人 / 被房主判掉线）：让提示行说一句
-	if mineBefore and not self:MySeat() then
+	-- 自己的座位没了：被别人坐走才提示换座；
+	-- 只是自己那条声明丢了（快照里该座是空的），交给 Tick 自动补报，不惊动玩家
+	if mineBefore and not self:MySeat() and self.seats[mineBefore] then
 		self.raceLost, self.raceLostAt = mineBefore, GetTime()
 	end
 	self:Changed()
 end
 
+--- 棋盘上一个子都没有（刚开局还没收到棋盘的典型状态）
+function G:BoardEmpty()
+	for i = 1, 121 do
+		if (self.board[i] or 0) > 0 then return false end
+	end
+	return true
+end
+
 function G:OnHostBoard(p)
 	local seq = tonumber(p[2]) or 0
 	self.lastHostAt = GetTime()
-	if seq <= (self.appliedB or 0) then return end
+	if seq <= (self.appliedB or 0) then
+		-- 序号没越过我们手里的，正常是该丢的旧包。
+		-- 但「对局中却一个子都没有」只可能是棋盘从来没收到过（对方曾经自己广播过，
+		-- 序号比我们大，于是它的新包一直被挡）。这时宁可按旧的也收下，先把棋盘点亮。
+		if not (self.phase == "play" and self:BoardEmpty()) then return end
+	end
 	self.appliedB = seq
 	self:DecodeBoard(p[3] or "")
 	self:Changed()
@@ -531,6 +571,8 @@ function G:Sit(index)
 	if index < 1 or index > 6 then return false, "座位号无效" end
 	if self.seats[index] then return false, "该座位已被占" end
 	self.seats[index] = { name = self:Me(), ready = false, seen = GetTime() }
+	self.wantSeat, self.reclaimN = index, 0   -- 声明丢了要能自己补回来
+	self.myReady = false
 	self:Send("C|SIT|" .. index)
 	self:MarkDirty()
 	return true
@@ -548,6 +590,8 @@ function G:Leave()
 	if not seat then return false, "你还没入座" end
 	if self.phase == "play" then return false, "对局中不能离座" end
 	self.seats[seat] = nil
+	self.wantSeat, self.reclaimN = nil, 0
+	self.myReady = false
 	self:Send("C|UP")
 	self:MarkDirty()
 	return true
@@ -559,6 +603,7 @@ function G:ToggleReady()
 	if self.phase ~= "wait" then return false, "对局已开始" end
 	local v = not self.seats[seat].ready
 	self.seats[seat].ready = v
+	self.myReady = v            -- 记住自己的意图：快照会把本地 ready 覆盖掉
 	self:Send("C|RDY|" .. (v and "1" or "0"))
 	self:MarkDirty()
 	return true
@@ -608,6 +653,7 @@ function G:Restart()
 	for i = 1, 6 do
 		if self.seats[i] then self.seats[i].ready = false end
 	end
+	self.myReady = false          -- 回到大厅就撤销我自己的「已准备」，否则会被自动开局
 	self.board  = EmptyBoard()
 	self.phase  = "wait"
 	self.turn   = nil
@@ -691,7 +737,7 @@ local hooked = false
 
 local function HookPanel()
 	if hooked then return end
-	local f = MZ.frame
+	local f = MZ.App.UI and MZ.App.UI.frame
 	if not f then return end
 	hooked = true
 	f:HookScript("OnShow", function() G:SetWatching(true) end)
@@ -708,8 +754,22 @@ function G:Tick(elapsed)
 
 	local now = GetTime()
 
+	-- 自己那条「我坐 N 号」的声明可能丢包，房主快照一盖座位就没了。
+	-- 悄悄补报几次，别让人只看到一句「座位已归他人」还得自己再点一次。
+	if self.wantSeat and not self:MySeat() and self.phase == "wait"
+		and (self.reclaimN or 0) < 3
+		and now - (self.reclaimAt or 0) >= 3 then
+		self.reclaimAt = now
+		self.reclaimN = (self.reclaimN or 0) + 1
+		local ok, err = self:Sit(self.wantSeat)
+		if not ok and err == "该座位已被占" then
+			self.wantSeat = nil        -- 真被别人坐走了，别再试
+		end
+	end
+
 	-- 自己的座位永远算「活着」（自己的包不会回到自己这里）
 	local mySeat = self:MySeat()
+	if mySeat then self.reclaimN = 0 end
 	if mySeat and self.seats[mySeat] then self.seats[mySeat].seen = now end
 
 	-- 面板开着就持续登记；坐着的人即使关面板也报活，免得被当成掉线
@@ -723,6 +783,29 @@ function G:Tick(elapsed)
 		if now - (self.lastPing or 0) >= PING_EVERY then
 			self.lastPing = now
 			self:Send("P")
+		end
+	end
+
+	-- 座位和准备都是「说一次就算」的：那一条包丢了，房主那边就永远看不到我
+	-- 坐下了 / 已就绪，全桌卡在等人阶段。跟着心跳幂等补报一次。
+	if mySeat and self.phase == "wait" and now - (self.lastClaim or 0) >= PING_EVERY then
+		self.lastClaim = now
+		-- 报的是自己的「意图」而不是快照里那个值：房主没见过我准备就会一直发
+		-- 「未准备」，我照着它回话就变成了互相把对方拉回未准备，全桌永远开不了局。
+		local s = self.seats[mySeat]
+		if s then s.ready = self.myReady end
+		self:Send("C|SIT|" .. mySeat .. "|" .. (self.myReady and "1" or "0"))
+	end
+
+	-- 「我这边已经该开局了，但什么都没收到」或者「对局中却一个子都没有」：
+	-- 主动要一次全量快照，并把手里的大序号报过去，让房主下一包能越过我们
+	-- （否则它发多少我们丢多少，棋盘永远不亮）。
+	if not self:IsHost() and now - (self.lastSync or 0) >= 2 then
+		local needSync = (self.phase == "play" and self:BoardEmpty())
+			or (self.phase == "wait" and self:CanStart())
+		if needSync then
+			self.lastSync = now
+			self:Send("R|" .. math.max(self.appliedH or 0, self.appliedB or 0))
 		end
 	end
 
@@ -786,7 +869,8 @@ function G:Demo()
 		-- 再点一次 = 退出演练。mute 必须清掉，否则之后一直发不出包、
 		-- IsHost 还会恒为 true，两个人真同桌时这台机器就成了哑巴。
 		self:Init()
-		if MZ.frame and MZ.frame:IsShown() then self:SetWatching(true) end
+		local f = MZ.App.UI and MZ.App.UI.frame
+		if f and f:IsShown() then self:SetWatching(true) end
 		self:Send("R")
 		self:Changed()
 		return false

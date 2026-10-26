@@ -1,9 +1,10 @@
--- ============================================================
+﻿-- ============================================================
 -- View · 公会活动
 -- ============================================================
 local ADDON_NAME, MZ = ...
-local S = MZ.Skin
-local UI = MZ.UI
+local App = MZ.App
+local S = App.Skin
+local UI = App.UI
 
 UI:AddPage{
 	id       = "activity",
@@ -16,7 +17,7 @@ UI:AddPage{
 				name  = "活动报名",
 				desc  = "发起一次集合，成员在这里点确认；名单自动汇总。",
 				label = "待填入",
-				action = function() MZ.Log:Info("「活动报名」功能位已预留，等接入。") end,
+				action = function() App.Core.Log:Info("「活动报名」功能位已预留，等接入。") end,
 			},
 			{
 				name  = "参战名单",

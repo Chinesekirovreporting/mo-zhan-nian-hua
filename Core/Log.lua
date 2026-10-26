@@ -4,7 +4,7 @@
 local ADDON_NAME, MZ = ...
 
 local Log = {}
-MZ.Modules.Log = Log
+MZ.App._modules.Log = Log
 
 local PREFIX = "|cffB33228墨战年华|r "
 local LEVEL = { DEBUG = 1, INFO = 2, WARN = 3, ERROR = 4 }

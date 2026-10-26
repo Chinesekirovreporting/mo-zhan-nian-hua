@@ -1,8 +1,8 @@
--- ============================================================
+﻿-- ============================================================
 -- Skin · 内容页骨架（标题 / 副标题 / 分隔线 / body）
 -- ============================================================
 local ADDON_NAME, MZ = ...
-local S = MZ.Skin
+local S = MZ.App.Skin
 
 function S:BuildPageShell(parent, def)
 	local page = CreateFrame("Frame", nil, parent)

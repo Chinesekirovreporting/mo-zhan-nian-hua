@@ -1,9 +1,10 @@
--- ============================================================
+﻿-- ============================================================
 -- View · 设置
 -- ============================================================
 local ADDON_NAME, MZ = ...
-local S = MZ.Skin
-local UI = MZ.UI
+local App = MZ.App
+local S = App.Skin
+local UI = App.UI
 
 UI:AddPage{
 	id       = "settings",
@@ -24,7 +25,7 @@ UI:AddPage{
 		plus:SetPoint("LEFT", pct, "RIGHT", 10, 0)
 
 		local function Apply(delta)
-			local v = UI:SetScale((MZ.Store:GetKey("scale", 1)) + delta)
+			local v = UI:SetScale((App.Core.Store:GetKey("scale", 1)) + delta)
 			pct:SetText(string.format("%d%%", math.floor(v * 100 + 0.5)))
 		end
 
@@ -36,17 +37,17 @@ UI:AddPage{
 		reset:SetScript("OnClick", function()
 			UI:ResetPosition()
 			pct:SetText("100%")
-			MZ.Log:Info("位置与缩放已重置。")
+			App.Core.Log:Info("位置与缩放已重置。")
 		end)
 
 		local about = S:Text(body, 11, "inkFaint",
-			"墨战年华 v" .. MZ.VERSION .. "　·　MV 架构")
+			"墨战年华 v" .. App.VERSION .. "　·　MV 架构")
 		about:SetPoint("TOPLEFT", body, "TOPLEFT", 2, -88)
 
 		local usage = S:Text(body, 11, "inkFaint",
 			"命令：/mznh 或 /mz 打开面板　/mz reset 重置　/mz test 查看状态")
 		usage:SetPoint("TOPLEFT", about, "BOTTOMLEFT", 0, -6)
 
-		pct:SetText(string.format("%d%%", math.floor((MZ.Store:GetKey("scale", 1)) * 100 + 0.5)))
+		pct:SetText(string.format("%d%%", math.floor((App.Core.Store:GetKey("scale", 1)) * 100 + 0.5)))
 	end,
 }

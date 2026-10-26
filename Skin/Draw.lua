@@ -1,9 +1,9 @@
--- ============================================================
+﻿-- ============================================================
 -- Skin · 基础绘制
 -- ============================================================
 local ADDON_NAME, MZ = ...
-local S = MZ.Skin
-local C = MZ.C
+local S = MZ.App.Skin
+local C = MZ.App.C
 
 function S:Solid(tex, color, alpha)
 	local a = alpha or color[4] or 1
@@ -76,7 +76,7 @@ end
 
 function S:Text(parent, size, tone, text, flags)
 	local fs = parent:CreateFontString(nil, "OVERLAY")
-	MZ:SetFont(fs, size or 13, flags)
+	MZ.App:SetFont(fs, size or 13, flags)
 	local color = C[tone or "ink"]
 	fs:SetTextColor(color[1], color[2], color[3], color[4] or 1)
 	if text then fs:SetText(text) end

@@ -1,10 +1,10 @@
--- ============================================================
+﻿-- ============================================================
 -- Skin · 按钮
 -- primary = true 时为朱砂实心
 -- ============================================================
 local ADDON_NAME, MZ = ...
-local S = MZ.Skin
-local C = MZ.C
+local S = MZ.App.Skin
+local C = MZ.App.C
 
 function S:Button(parent, text, width, height, primary)
 	local b = CreateFrame("Button", nil, parent)

@@ -1,10 +1,11 @@
--- ============================================================
+﻿-- ============================================================
 -- View · 开怪计时
 -- ============================================================
 local ADDON_NAME, MZ = ...
-local S = MZ.Skin
-local C = MZ.C
-local UI = MZ.UI
+local App = MZ.App
+local S = App.Skin
+local C = App.C
+local UI = App.UI
 
 local function GroupChannel()
 	if IsInRaid() then return "RAID" end
@@ -18,12 +19,12 @@ UI:AddPage{
 	subtitle = "设定分钟数，到点自动通报",
 	order    = 20,
 	build    = function(page, body)
-		local remain = (MZ.Store:GetKey("timerMinutes", 3)) * 60
+		local remain = (App.Core.Store:GetKey("timerMinutes", 3)) * 60
 		local running = false
 		local endAt = 0
 		local tick
 
-		local display = S:Text(body, 46, "ink", MZ.Time:Format(remain))
+		local display = S:Text(body, 46, "ink", App.Core.Time:Format(remain))
 		display:SetPoint("TOP", body, "TOP", 0, -10)
 
 		local status = S:Text(body, 11, "inkFaint", "未开始")
@@ -34,7 +35,7 @@ UI:AddPage{
 
 		local box = S:EditBox(body, 60, 26)
 		box:SetPoint("LEFT", label, "RIGHT", 10, 0)
-		box:SetText(tostring(MZ.Store:GetKey("timerMinutes", 3)))
+		box:SetText(tostring(App.Core.Store:GetKey("timerMinutes", 3)))
 
 		local setBtn = S:Button(body, "设定", 60, 26)
 		setBtn:SetPoint("LEFT", box, "RIGHT", 8, 0)
@@ -55,7 +56,7 @@ UI:AddPage{
 		hint:SetPoint("TOPLEFT", body, "TOPLEFT", 4, -186)
 
 		local function Refresh()
-			display:SetText(MZ.Time:Format(remain))
+			display:SetText(App.Core.Time:Format(remain))
 			if running then
 				status:SetText("进行中")
 			elseif remain <= 0 then
@@ -70,7 +71,7 @@ UI:AddPage{
 			if not v or v <= 0 then v = 3 end
 			v = math.min(120, v)
 			box:SetText(tostring(v))
-			MZ.Store:Set("timerMinutes", v)
+			App.Core.Store:Set("timerMinutes", v)
 			return v
 		end
 
@@ -88,45 +89,45 @@ UI:AddPage{
 		local function StartTick()
 			StopTick()
 			-- 用 Time 管理器驱动；切页不影响，到点照样通报
-			tick = MZ.Time:Every(0.2, function()
+			tick = App.Core.Time:Every(0.2, function()
 				if not running then
 					StopTick()
 					return
 				end
-				remain = endAt - MZ.Time:Now()
+				remain = endAt - App.Core.Time:Now()
 				if remain <= 0 then
 					remain = 0
 					running = false
 					StopTick()
 					display:SetTextColor(C.cinnabar[1], C.cinnabar[2], C.cinnabar[3], 1)
 					status:SetText("已结束")
-					display:SetText(MZ.Time:Format(0))
+					display:SetText(App.Core.Time:Format(0))
 					Announce("倒计时结束，开怪！")
-					MZ.Event:Send("MZ_TIMER_DONE")
+					App.Core.Event:Send("MZ_TIMER_DONE")
 					return
 				end
-				display:SetText(MZ.Time:Format(remain))
+				display:SetText(App.Core.Time:Format(remain))
 			end)
 		end
 
 		startBtn:SetScript("OnClick", function()
 			if remain <= 0 then remain = ReadMinutes() * 60 end
-			endAt = MZ.Time:Now() + remain
+			endAt = App.Core.Time:Now() + remain
 			running = true
 			display:SetTextColor(C.ink[1], C.ink[2], C.ink[3], 1)
 			status:SetText("进行中")
 			StartTick()
-			Announce("开怪倒计时 " .. MZ.Time:Format(remain) .. " 开始，请就位。")
-			MZ.Event:Send("MZ_TIMER_START", remain)
+			Announce("开怪倒计时 " .. App.Core.Time:Format(remain) .. " 开始，请就位。")
+			App.Core.Event:Send("MZ_TIMER_START", remain)
 		end)
 
 		pauseBtn:SetScript("OnClick", function()
 			if running then
-				remain = math.max(0, endAt - MZ.Time:Now())
+				remain = math.max(0, endAt - App.Core.Time:Now())
 				running = false
 				StopTick()
 				Refresh()
-				MZ.Event:Send("MZ_TIMER_PAUSE", remain)
+				App.Core.Event:Send("MZ_TIMER_PAUSE", remain)
 			end
 		end)
 
@@ -146,7 +147,7 @@ UI:AddPage{
 		end)
 
 		sayBtn:SetScript("OnClick", function()
-			Announce("倒计时 " .. MZ.Time:Format(remain) .. "，请准备。")
+			Announce("倒计时 " .. App.Core.Time:Format(remain) .. "，请准备。")
 		end)
 
 		Refresh()
