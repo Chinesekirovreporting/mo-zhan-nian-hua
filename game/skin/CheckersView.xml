@@ -1,0 +1,4 @@
+<Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/..\FrameXML\UI.xsd">
+	<!-- 子窗口：六角跳棋。121 格和座位行随棋盘生成，见 game/view/views/CheckersView.lua。 -->
+	<Frame name="MZPageCheckers" parent="MZMainContent" inherits="MZPageTemplate" hidden="true"/>
+</Ui>

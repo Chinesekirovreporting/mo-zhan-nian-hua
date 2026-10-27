@@ -1,0 +1,101 @@
+<Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/..\FrameXML\UI.xsd">
+	<!-- 子窗口：开怪计时。走表和通报在 game/module/TimerModule.lua。 -->
+	<Frame name="MZPageTimer" parent="MZMainContent" inherits="MZPageTemplate" hidden="true"/>
+
+	<Frame name="MZTimerChrome" parent="MZPageTimer">
+		<Anchors>
+			<Anchor point="TOPLEFT" relativeTo="MZPageTimerBody"/>
+			<Anchor point="BOTTOMRIGHT" relativeTo="MZPageTimerBody"/>
+		</Anchors>
+		<Layers>
+			<Layer level="OVERLAY">
+				<FontString name="MZTimerHint" inherits="GameFontHighlight" justifyH="LEFT" text="提示：通报会发到团队 / 小队频道，单人时为说话。">
+					<Anchors>
+						<Anchor point="TOPLEFT" x="4" y="-186"/>
+						<Anchor point="RIGHT" x="-4" y="0"/>
+					</Anchors>
+					<Color r="0.435" g="0.408" b="0.361"/>
+				</FontString>
+			</Layer>
+		</Layers>
+		<Frames>
+			<Frame name="MZTimerDisplayHost">
+				<Size x="420" y="72"/>
+				<Anchors>
+					<Anchor point="TOP" x="0" y="-10"/>
+				</Anchors>
+				<Layers>
+					<Layer level="OVERLAY">
+						<FontString name="MZTimerDisplay" inherits="GameFontNormal" text="03:00" justifyH="CENTER">
+							<Anchors>
+								<Anchor point="TOP"/>
+							</Anchors>
+							<FontHeight>
+								<AbsValue val="46"/>
+							</FontHeight>
+							<Color r="0.106" g="0.098" b="0.086"/>
+						</FontString>
+						<FontString name="MZTimerStatus" inherits="GameFontHighlight" text="未开始" justifyH="CENTER">
+							<Anchors>
+								<Anchor point="TOP" relativeTo="MZTimerDisplay" relativePoint="BOTTOM" x="0" y="-6"/>
+							</Anchors>
+							<Color r="0.435" g="0.408" b="0.361"/>
+						</FontString>
+					</Layer>
+				</Layers>
+			</Frame>
+			<Frame name="MZTimerMinuteLabel">
+				<Size x="52" y="26"/>
+				<Anchors>
+					<Anchor point="TOPLEFT" x="4" y="-104"/>
+				</Anchors>
+				<Layers>
+					<Layer level="OVERLAY">
+						<FontString name="$parentText" inherits="GameFontHighlight" text="分钟数" justifyH="LEFT">
+							<Anchors>
+								<Anchor point="LEFT"/>
+							</Anchors>
+							<Color r="0.278" g="0.259" b="0.227"/>
+						</FontString>
+					</Layer>
+				</Layers>
+			</Frame>
+			<EditBox name="MZTimerMinutes" inherits="MZEditBoxTemplate" letters="12">
+				<Size x="60" y="26"/>
+				<Anchors>
+					<Anchor point="LEFT" relativeTo="MZTimerMinuteLabel" relativePoint="RIGHT" x="10" y="0"/>
+				</Anchors>
+			</EditBox>
+			<Button name="MZTimerSet" inherits="MZButtonTemplate" text="设定">
+				<Size x="60" y="26"/>
+				<Anchors>
+					<Anchor point="LEFT" relativeTo="MZTimerMinutes" relativePoint="RIGHT" x="8" y="0"/>
+				</Anchors>
+			</Button>
+			<Button name="MZTimerStart" inherits="MZButtonTemplate" text="开始">
+				<Size x="72" y="28"/>
+				<Anchors>
+					<Anchor point="TOPLEFT" x="4" y="-146"/>
+				</Anchors>
+			</Button>
+			<Button name="MZTimerPause" inherits="MZButtonTemplate" text="暂停">
+				<Size x="72" y="28"/>
+				<Anchors>
+					<Anchor point="LEFT" relativeTo="MZTimerStart" relativePoint="RIGHT" x="8" y="0"/>
+				</Anchors>
+			</Button>
+			<Button name="MZTimerReset" inherits="MZButtonTemplate" text="重置">
+				<Size x="72" y="28"/>
+				<Anchors>
+					<Anchor point="LEFT" relativeTo="MZTimerPause" relativePoint="RIGHT" x="8" y="0"/>
+				</Anchors>
+			</Button>
+			<Button name="MZTimerSay" inherits="MZButtonTemplate" text="通报剩余">
+				<Size x="96" y="28"/>
+				<Anchors>
+					<Anchor point="LEFT" relativeTo="MZTimerReset" relativePoint="RIGHT" x="8" y="0"/>
+				</Anchors>
+			</Button>
+		</Frames>
+	</Frame>
+</Ui>

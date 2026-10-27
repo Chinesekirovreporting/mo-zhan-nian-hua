@@ -1,0 +1,423 @@
+<Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/..\FrameXML\UI.xsd">
+	<!-- 主窗口骨架。行为在 game/view/MainUI.lua。尺寸与 core/Init.lua 的 App.Layout 一致。 -->
+	<Frame name="MoZhanNianHuaFrame" parent="UIParent" hidden="true" movable="true" enableMouse="true" clampedToScreen="true" frameStrata="DIALOG" toplevel="true">
+		<Size x="660" y="470"/>
+		<Anchors>
+			<Anchor point="CENTER"/>
+		</Anchors>
+		<Layers>
+			<Layer level="BACKGROUND">
+				<Texture name="$parentBg" file="Interface\ChatFrame\ChatFrameBackground" setAllPoints="true">
+					<Color r="0.902" g="0.871" b="0.792" a="1"/>
+				</Texture>
+			</Layer>
+			<Layer level="BORDER">
+				<Texture file="Interface\ChatFrame\ChatFrameBackground">
+					<Size y="1"/>
+					<Anchors>
+						<Anchor point="TOPLEFT"/>
+						<Anchor point="TOPRIGHT"/>
+					</Anchors>
+					<Color r="0.106" g="0.098" b="0.086" a="1"/>
+				</Texture>
+				<Texture file="Interface\ChatFrame\ChatFrameBackground">
+					<Size y="1"/>
+					<Anchors>
+						<Anchor point="BOTTOMLEFT"/>
+						<Anchor point="BOTTOMRIGHT"/>
+					</Anchors>
+					<Color r="0.106" g="0.098" b="0.086" a="1"/>
+				</Texture>
+				<Texture file="Interface\ChatFrame\ChatFrameBackground">
+					<Size x="1"/>
+					<Anchors>
+						<Anchor point="TOPLEFT"/>
+						<Anchor point="BOTTOMLEFT"/>
+					</Anchors>
+					<Color r="0.106" g="0.098" b="0.086" a="1"/>
+				</Texture>
+				<Texture file="Interface\ChatFrame\ChatFrameBackground">
+					<Size x="1"/>
+					<Anchors>
+						<Anchor point="TOPRIGHT"/>
+						<Anchor point="BOTTOMRIGHT"/>
+					</Anchors>
+					<Color r="0.106" g="0.098" b="0.086" a="1"/>
+				</Texture>
+				<Texture file="Interface\ChatFrame\ChatFrameBackground">
+					<Size y="1"/>
+					<Anchors>
+						<Anchor point="TOPLEFT" x="4" y="-4"/>
+						<Anchor point="TOPRIGHT" x="-4" y="-4"/>
+					</Anchors>
+					<Color r="0.106" g="0.098" b="0.086" a="0.35"/>
+				</Texture>
+				<Texture file="Interface\ChatFrame\ChatFrameBackground">
+					<Size y="1"/>
+					<Anchors>
+						<Anchor point="BOTTOMLEFT" x="4" y="4"/>
+						<Anchor point="BOTTOMRIGHT" x="-4" y="4"/>
+					</Anchors>
+					<Color r="0.106" g="0.098" b="0.086" a="0.35"/>
+				</Texture>
+				<Texture file="Interface\ChatFrame\ChatFrameBackground">
+					<Size x="1"/>
+					<Anchors>
+						<Anchor point="TOPLEFT" x="4" y="-4"/>
+						<Anchor point="BOTTOMLEFT" x="4" y="4"/>
+					</Anchors>
+					<Color r="0.106" g="0.098" b="0.086" a="0.35"/>
+				</Texture>
+				<Texture file="Interface\ChatFrame\ChatFrameBackground">
+					<Size x="1"/>
+					<Anchors>
+						<Anchor point="TOPRIGHT" x="-4" y="-4"/>
+						<Anchor point="BOTTOMRIGHT" x="-4" y="4"/>
+					</Anchors>
+					<Color r="0.106" g="0.098" b="0.086" a="0.35"/>
+				</Texture>
+			</Layer>
+		</Layers>
+		<Frames>
+			<Frame name="MZMainTitle">
+				<Size y="44"/>
+				<Anchors>
+					<Anchor point="TOPLEFT" x="1" y="-1"/>
+					<Anchor point="TOPRIGHT" x="-1" y="-1"/>
+				</Anchors>
+				<Layers>
+					<Layer level="ARTWORK">
+						<Texture name="MZMainTitleRule" file="Interface\ChatFrame\ChatFrameBackground">
+							<Size y="1"/>
+							<Anchors>
+								<Anchor point="BOTTOMLEFT"/>
+								<Anchor point="BOTTOMRIGHT"/>
+							</Anchors>
+							<Color r="0.106" g="0.098" b="0.086" a="0.85"/>
+						</Texture>
+						<Texture name="MZMainSeal" file="Interface\ChatFrame\ChatFrameBackground">
+							<Size x="22" y="22"/>
+							<Anchors>
+								<Anchor point="LEFT" x="16" y="0"/>
+							</Anchors>
+							<Color r="0.702" g="0.196" b="0.157" a="1"/>
+						</Texture>
+						<FontString name="MZMainSealText" inherits="GameFontNormal" text="墨" justifyH="CENTER" justifyV="MIDDLE">
+							<Anchors>
+								<Anchor point="CENTER" relativeTo="MZMainSeal"/>
+							</Anchors>
+							<FontHeight>
+								<AbsValue val="14"/>
+							</FontHeight>
+							<Color r="0.949" g="0.925" b="0.867"/>
+						</FontString>
+						<FontString name="MZMainHeading" inherits="GameFontNormal" text="墨战年华" justifyH="LEFT">
+							<Anchors>
+								<Anchor point="LEFT" relativeTo="MZMainSeal" relativePoint="RIGHT" x="12" y="0"/>
+							</Anchors>
+							<FontHeight>
+								<AbsValue val="18"/>
+							</FontHeight>
+							<Color r="0.106" g="0.098" b="0.086"/>
+						</FontString>
+						<FontString name="MZMainCaption" inherits="GameFontHighlight" text="公会活动面板" justifyH="LEFT">
+							<Anchors>
+								<Anchor point="LEFT" relativeTo="MZMainHeading" relativePoint="RIGHT" x="12" y="-1"/>
+							</Anchors>
+							<Color r="0.435" g="0.408" b="0.361"/>
+						</FontString>
+					</Layer>
+				</Layers>
+				<Frames>
+					<Button name="MZMainClose" enableMouse="true">
+						<Size x="28" y="28"/>
+						<Anchors>
+							<Anchor point="RIGHT" x="-10" y="0"/>
+						</Anchors>
+						<Layers>
+							<Layer level="BACKGROUND">
+								<Texture name="$parentBg" file="Interface\ChatFrame\ChatFrameBackground" setAllPoints="true">
+									<Color r="0.702" g="0.196" b="0.157" a="0"/>
+								</Texture>
+							</Layer>
+							<Layer level="OVERLAY">
+								<FontString name="MZMainCloseMark" inherits="GameFontNormal" text="×" justifyH="CENTER">
+									<Anchors>
+										<Anchor point="CENTER" x="0" y="1"/>
+									</Anchors>
+									<FontHeight>
+										<AbsValue val="20"/>
+									</FontHeight>
+									<Color r="0.278" g="0.259" b="0.227"/>
+								</FontString>
+							</Layer>
+						</Layers>
+						<HighlightTexture file="Interface\ChatFrame\ChatFrameBackground" alphaMode="ADD">
+							<Color r="1" g="1" b="1" a="0"/>
+						</HighlightTexture>
+						<Scripts>
+							<OnEnter>
+								_G["MZMainCloseBg"]:SetVertexColor(0.702, 0.196, 0.157, 0.85)
+								_G["MZMainCloseMark"]:SetTextColor(0.949, 0.925, 0.867, 1)
+							</OnEnter>
+							<OnLeave>
+								_G["MZMainCloseBg"]:SetVertexColor(0.702, 0.196, 0.157, 0)
+								_G["MZMainCloseMark"]:SetTextColor(0.278, 0.259, 0.227, 1)
+							</OnLeave>
+						</Scripts>
+					</Button>
+				</Frames>
+			</Frame>
+
+			<Frame name="MZMainSide">
+				<Size x="156"/>
+				<Anchors>
+					<Anchor point="TOPLEFT" x="1" y="-45"/>
+					<Anchor point="BOTTOMLEFT" x="1" y="1"/>
+				</Anchors>
+				<Layers>
+					<Layer level="BACKGROUND">
+						<Texture file="Interface\ChatFrame\ChatFrameBackground" setAllPoints="true">
+							<Color r="0.749" g="0.714" b="0.624" a="0.35"/>
+						</Texture>
+					</Layer>
+					<Layer level="BORDER">
+						<Texture file="Interface\ChatFrame\ChatFrameBackground">
+							<Size x="1"/>
+							<Anchors>
+								<Anchor point="TOPRIGHT"/>
+								<Anchor point="BOTTOMRIGHT"/>
+							</Anchors>
+							<Color r="0.106" g="0.098" b="0.086" a="0.55"/>
+						</Texture>
+					</Layer>
+				</Layers>
+				<Frames>
+					<Frame name="MZMainTabArea">
+						<Anchors>
+							<Anchor point="TOPLEFT" x="10" y="-16"/>
+							<Anchor point="BOTTOMRIGHT" x="-10" y="16"/>
+						</Anchors>
+					</Frame>
+				</Frames>
+			</Frame>
+
+			<Frame name="MZMainContent">
+				<Anchors>
+					<Anchor point="TOPLEFT" relativeTo="MZMainSide" relativePoint="TOPRIGHT" x="1" y="0"/>
+					<Anchor point="BOTTOMRIGHT" x="-1" y="1"/>
+				</Anchors>
+			</Frame>
+		</Frames>
+	</Frame>
+
+	<Button name="MZTabActivity" parent="MZMainTabArea" text="公会活动" enableMouse="true">
+		<Size y="34"/>
+		<Anchors>
+			<Anchor point="TOPLEFT"/>
+			<Anchor point="TOPRIGHT"/>
+		</Anchors>
+		<Layers>
+			<Layer level="BACKGROUND">
+				<Texture name="$parentBg" file="Interface\ChatFrame\ChatFrameBackground" setAllPoints="true">
+					<Color r="0.902" g="0.871" b="0.792" a="0"/>
+				</Texture>
+			</Layer>
+			<Layer level="ARTWORK">
+				<Texture name="$parentBar" file="Interface\ChatFrame\ChatFrameBackground">
+					<Size x="3"/>
+					<Anchors>
+						<Anchor point="TOPLEFT"/>
+						<Anchor point="BOTTOMLEFT"/>
+					</Anchors>
+					<Color r="0.702" g="0.196" b="0.157" a="1"/>
+				</Texture>
+			</Layer>
+		</Layers>
+		<ButtonText>
+			<Anchors>
+				<Anchor point="LEFT" x="14" y="0"/>
+			</Anchors>
+		</ButtonText>
+		<NormalFont style="GameFontNormal"/>
+		<NormalTextColor r="0.278" g="0.259" b="0.227"/>
+		<HighlightTexture file="Interface\ChatFrame\ChatFrameBackground" alphaMode="ADD">
+			<Color r="1" g="1" b="1" a="0"/>
+		</HighlightTexture>
+	</Button>
+
+	<Button name="MZTabCheckers" parent="MZMainTabArea" text="六角跳棋" enableMouse="true">
+		<Size y="34"/>
+		<Anchors>
+			<Anchor point="TOPLEFT" relativeTo="MZTabActivity" relativePoint="BOTTOMLEFT" x="0" y="-6"/>
+			<Anchor point="TOPRIGHT" relativeTo="MZTabActivity" relativePoint="BOTTOMRIGHT" x="0" y="-6"/>
+		</Anchors>
+		<Layers>
+			<Layer level="BACKGROUND">
+				<Texture name="$parentBg" file="Interface\ChatFrame\ChatFrameBackground" setAllPoints="true">
+					<Color r="0.902" g="0.871" b="0.792" a="0"/>
+				</Texture>
+			</Layer>
+			<Layer level="ARTWORK">
+				<Texture name="$parentBar" file="Interface\ChatFrame\ChatFrameBackground">
+					<Size x="3"/>
+					<Anchors>
+						<Anchor point="TOPLEFT"/>
+						<Anchor point="BOTTOMLEFT"/>
+					</Anchors>
+					<Color r="0.702" g="0.196" b="0.157" a="1"/>
+				</Texture>
+			</Layer>
+		</Layers>
+		<ButtonText>
+			<Anchors>
+				<Anchor point="LEFT" x="14" y="0"/>
+			</Anchors>
+		</ButtonText>
+		<NormalFont style="GameFontNormal"/>
+		<NormalTextColor r="0.278" g="0.259" b="0.227"/>
+		<HighlightTexture file="Interface\ChatFrame\ChatFrameBackground" alphaMode="ADD">
+			<Color r="1" g="1" b="1" a="0"/>
+		</HighlightTexture>
+	</Button>
+
+	<Button name="MZTabDkp" parent="MZMainTabArea" text="公会 DKP" enableMouse="true">
+		<Size y="34"/>
+		<Anchors>
+			<Anchor point="TOPLEFT" relativeTo="MZTabCheckers" relativePoint="BOTTOMLEFT" x="0" y="-6"/>
+			<Anchor point="TOPRIGHT" relativeTo="MZTabCheckers" relativePoint="BOTTOMRIGHT" x="0" y="-6"/>
+		</Anchors>
+		<Layers>
+			<Layer level="BACKGROUND">
+				<Texture name="$parentBg" file="Interface\ChatFrame\ChatFrameBackground" setAllPoints="true">
+					<Color r="0.902" g="0.871" b="0.792" a="0"/>
+				</Texture>
+			</Layer>
+			<Layer level="ARTWORK">
+				<Texture name="$parentBar" file="Interface\ChatFrame\ChatFrameBackground">
+					<Size x="3"/>
+					<Anchors>
+						<Anchor point="TOPLEFT"/>
+						<Anchor point="BOTTOMLEFT"/>
+					</Anchors>
+					<Color r="0.702" g="0.196" b="0.157" a="1"/>
+				</Texture>
+			</Layer>
+		</Layers>
+		<ButtonText>
+			<Anchors>
+				<Anchor point="LEFT" x="14" y="0"/>
+			</Anchors>
+		</ButtonText>
+		<NormalFont style="GameFontNormal"/>
+		<NormalTextColor r="0.278" g="0.259" b="0.227"/>
+		<HighlightTexture file="Interface\ChatFrame\ChatFrameBackground" alphaMode="ADD">
+			<Color r="1" g="1" b="1" a="0"/>
+		</HighlightTexture>
+	</Button>
+
+	<Button name="MZTabTimer" parent="MZMainTabArea" text="开怪计时" enableMouse="true">
+		<Size y="34"/>
+		<Anchors>
+			<Anchor point="TOPLEFT" relativeTo="MZTabDkp" relativePoint="BOTTOMLEFT" x="0" y="-6"/>
+			<Anchor point="TOPRIGHT" relativeTo="MZTabDkp" relativePoint="BOTTOMRIGHT" x="0" y="-6"/>
+		</Anchors>
+		<Layers>
+			<Layer level="BACKGROUND">
+				<Texture name="$parentBg" file="Interface\ChatFrame\ChatFrameBackground" setAllPoints="true">
+					<Color r="0.902" g="0.871" b="0.792" a="0"/>
+				</Texture>
+			</Layer>
+			<Layer level="ARTWORK">
+				<Texture name="$parentBar" file="Interface\ChatFrame\ChatFrameBackground">
+					<Size x="3"/>
+					<Anchors>
+						<Anchor point="TOPLEFT"/>
+						<Anchor point="BOTTOMLEFT"/>
+					</Anchors>
+					<Color r="0.702" g="0.196" b="0.157" a="1"/>
+				</Texture>
+			</Layer>
+		</Layers>
+		<ButtonText>
+			<Anchors>
+				<Anchor point="LEFT" x="14" y="0"/>
+			</Anchors>
+		</ButtonText>
+		<NormalFont style="GameFontNormal"/>
+		<NormalTextColor r="0.278" g="0.259" b="0.227"/>
+		<HighlightTexture file="Interface\ChatFrame\ChatFrameBackground" alphaMode="ADD">
+			<Color r="1" g="1" b="1" a="0"/>
+		</HighlightTexture>
+	</Button>
+
+	<Button name="MZTabRoster" parent="MZMainTabArea" text="参战名单" enableMouse="true">
+		<Size y="34"/>
+		<Anchors>
+			<Anchor point="TOPLEFT" relativeTo="MZTabTimer" relativePoint="BOTTOMLEFT" x="0" y="-6"/>
+			<Anchor point="TOPRIGHT" relativeTo="MZTabTimer" relativePoint="BOTTOMRIGHT" x="0" y="-6"/>
+		</Anchors>
+		<Layers>
+			<Layer level="BACKGROUND">
+				<Texture name="$parentBg" file="Interface\ChatFrame\ChatFrameBackground" setAllPoints="true">
+					<Color r="0.902" g="0.871" b="0.792" a="0"/>
+				</Texture>
+			</Layer>
+			<Layer level="ARTWORK">
+				<Texture name="$parentBar" file="Interface\ChatFrame\ChatFrameBackground">
+					<Size x="3"/>
+					<Anchors>
+						<Anchor point="TOPLEFT"/>
+						<Anchor point="BOTTOMLEFT"/>
+					</Anchors>
+					<Color r="0.702" g="0.196" b="0.157" a="1"/>
+				</Texture>
+			</Layer>
+		</Layers>
+		<ButtonText>
+			<Anchors>
+				<Anchor point="LEFT" x="14" y="0"/>
+			</Anchors>
+		</ButtonText>
+		<NormalFont style="GameFontNormal"/>
+		<NormalTextColor r="0.278" g="0.259" b="0.227"/>
+		<HighlightTexture file="Interface\ChatFrame\ChatFrameBackground" alphaMode="ADD">
+			<Color r="1" g="1" b="1" a="0"/>
+		</HighlightTexture>
+	</Button>
+
+	<Button name="MZTabSettings" parent="MZMainTabArea" text="设置" enableMouse="true">
+		<Size y="34"/>
+		<Anchors>
+			<Anchor point="TOPLEFT" relativeTo="MZTabRoster" relativePoint="BOTTOMLEFT" x="0" y="-6"/>
+			<Anchor point="TOPRIGHT" relativeTo="MZTabRoster" relativePoint="BOTTOMRIGHT" x="0" y="-6"/>
+		</Anchors>
+		<Layers>
+			<Layer level="BACKGROUND">
+				<Texture name="$parentBg" file="Interface\ChatFrame\ChatFrameBackground" setAllPoints="true">
+					<Color r="0.902" g="0.871" b="0.792" a="0"/>
+				</Texture>
+			</Layer>
+			<Layer level="ARTWORK">
+				<Texture name="$parentBar" file="Interface\ChatFrame\ChatFrameBackground">
+					<Size x="3"/>
+					<Anchors>
+						<Anchor point="TOPLEFT"/>
+						<Anchor point="BOTTOMLEFT"/>
+					</Anchors>
+					<Color r="0.702" g="0.196" b="0.157" a="1"/>
+				</Texture>
+			</Layer>
+		</Layers>
+		<ButtonText>
+			<Anchors>
+				<Anchor point="LEFT" x="14" y="0"/>
+			</Anchors>
+		</ButtonText>
+		<NormalFont style="GameFontNormal"/>
+		<NormalTextColor r="0.278" g="0.259" b="0.227"/>
+		<HighlightTexture file="Interface\ChatFrame\ChatFrameBackground" alphaMode="ADD">
+			<Color r="1" g="1" b="1" a="0"/>
+		</HighlightTexture>
+	</Button>
+</Ui>

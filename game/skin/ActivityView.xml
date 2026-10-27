@@ -1,0 +1,61 @@
+<Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/..\FrameXML\UI.xsd">
+	<!-- 子窗口：公会活动。点击在 game/view/views/ActivityView.lua。 -->
+	<Frame name="MZPageActivity" parent="MZMainContent" inherits="MZPageTemplate" hidden="true"/>
+
+	<Frame name="MZActivitySignup" parent="MZPageActivity" inherits="MZCardTemplate">
+		<Anchors>
+			<Anchor point="TOPLEFT" relativeTo="MZPageActivityBody" relativePoint="TOPLEFT"/>
+			<Anchor point="TOPRIGHT" relativeTo="MZPageActivityBody" relativePoint="TOPRIGHT"/>
+		</Anchors>
+		<Scripts>
+			<OnLoad>
+				_G["MZActivitySignupTitle"]:SetText("活动报名")
+				_G["MZActivitySignupDesc"]:SetText("发起一次集合，成员在这里点确认；名单自动汇总。")
+			</OnLoad>
+		</Scripts>
+	</Frame>
+	<Button name="MZActivitySignupAction" parent="MZActivitySignup" inherits="MZButtonTemplate" text="待填入">
+		<Size x="84" y="26"/>
+		<Anchors>
+			<Anchor point="RIGHT" x="-14" y="0"/>
+		</Anchors>
+	</Button>
+
+	<Frame name="MZActivityRoster" parent="MZPageActivity" inherits="MZCardTemplate">
+		<Anchors>
+			<Anchor point="TOPLEFT" relativeTo="MZPageActivityBody" relativePoint="TOPLEFT" x="0" y="-86"/>
+			<Anchor point="TOPRIGHT" relativeTo="MZPageActivityBody" relativePoint="TOPRIGHT" x="0" y="-86"/>
+		</Anchors>
+		<Scripts>
+			<OnLoad>
+				_G["MZActivityRosterTitle"]:SetText("参战名单")
+				_G["MZActivityRosterDesc"]:SetText("读取当前团队 / 小队成员，按职业着色，标注等级。")
+			</OnLoad>
+		</Scripts>
+	</Frame>
+	<Button name="MZActivityRosterAction" parent="MZActivityRoster" inherits="MZButtonTemplate" text="看名单">
+		<Size x="84" y="26"/>
+		<Anchors>
+			<Anchor point="RIGHT" x="-14" y="0"/>
+		</Anchors>
+	</Button>
+
+	<Frame name="MZActivityTimer" parent="MZPageActivity" inherits="MZCardTemplate">
+		<Anchors>
+			<Anchor point="TOPLEFT" relativeTo="MZPageActivityBody" relativePoint="TOPLEFT" x="0" y="-172"/>
+			<Anchor point="TOPRIGHT" relativeTo="MZPageActivityBody" relativePoint="TOPRIGHT" x="0" y="-172"/>
+		</Anchors>
+		<Scripts>
+			<OnLoad>
+				_G["MZActivityTimerTitle"]:SetText("开怪计时")
+				_G["MZActivityTimerDesc"]:SetText("统一节奏，倒计时可一键通报到团队频道。")
+			</OnLoad>
+		</Scripts>
+	</Frame>
+	<Button name="MZActivityTimerAction" parent="MZActivityTimer" inherits="MZButtonTemplate" text="去计时">
+		<Size x="84" y="26"/>
+		<Anchors>
+			<Anchor point="RIGHT" x="-14" y="0"/>
+		</Anchors>
+	</Button>
+</Ui>

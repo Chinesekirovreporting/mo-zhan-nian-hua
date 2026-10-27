@@ -1,7 +1,7 @@
 -- ============================================================
 -- Core · 内核声明
--- 在 MZ.App 上挂载元信息 / 主题 / 字体 / _modules 暂存
--- 对外最终只保留 MZ.App（由 App\App 组装 Core）
+-- 主题 / 字体 / 模块登记表，以及每帧 updateTick。
+-- dt 是秒（暴雪 OnUpdate），不是参考工程里的毫秒。
 -- ============================================================
 local ADDON_NAME, MZ = ...
 
@@ -11,8 +11,47 @@ MZ.App = App
 App.ADDON   = ADDON_NAME
 App.VERSION = "0.4.2"
 
--- 各 Core\*.lua 注册到此；App\App 组装为 App.Core 后可作内部暂存
+-- 各模块加载时把自己的单例放进来，App.lua 再挂到门面上
 App._modules = {}
+App._tickers = {}
+
+function App:addManager(manager)
+	if not manager then return end
+	local list = self._tickers
+	for i = 1, #list do
+		if list[i] == manager then return end
+	end
+	list[#list + 1] = manager
+end
+
+function App:removeManager(manager)
+	local list = self._tickers
+	for i = #list, 1, -1 do
+		if list[i] == manager then
+			table.remove(list, i)
+		end
+	end
+end
+
+function App:updateTick(dt)
+	local list = self._tickers
+	for i = 1, #list do
+		local manager = list[i]
+		if manager.update then
+			manager:update(dt)
+		end
+	end
+end
+
+-- 与 game/skin/MainUI.xml 的窗口尺寸保持一致
+App.Layout = {
+	WIDTH   = 660,
+	HEIGHT  = 470,
+	TITLE_H = 44,
+	SIDE_W  = 156,
+	TAB_H   = 34,
+	TAB_GAP = 6,
+}
 
 -- 水墨配色：宣纸底 + 墨线 + 朱砂点缀
 App.C = {
@@ -45,3 +84,5 @@ function App:SetFont(fontString, size, flags)
 	end
 	return fontString
 end
+
+-- 每帧驱动在 core/Hook.lua：那是自己的框体，走 Never 层的 Bind。

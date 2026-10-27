@@ -1,0 +1,68 @@
+<Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/..\FrameXML\UI.xsd">
+	<!-- 子窗口：参战名单。成员行是数据，由 game/view/views/RosterView.lua 填进滚动区。 -->
+	<Frame name="MZPageRoster" parent="MZMainContent" inherits="MZPageTemplate" hidden="true"/>
+
+	<Frame name="MZRosterChrome" parent="MZPageRoster">
+		<Anchors>
+			<Anchor point="TOPLEFT" relativeTo="MZPageRosterBody"/>
+			<Anchor point="BOTTOMRIGHT" relativeTo="MZPageRosterBody"/>
+		</Anchors>
+		<Layers>
+			<Layer level="OVERLAY">
+				<FontString name="MZRosterCount" inherits="GameFontHighlight" justifyH="LEFT" text="">
+					<Anchors>
+						<Anchor point="TOPLEFT" x="2" y="0"/>
+					</Anchors>
+					<Color r="0.435" g="0.408" b="0.361"/>
+				</FontString>
+			</Layer>
+		</Layers>
+		<Frames>
+			<Button name="MZRosterRefresh" inherits="MZButtonTemplate" text="刷新">
+				<Size x="60" y="24"/>
+				<Anchors>
+					<Anchor point="TOPRIGHT" x="0" y="4"/>
+				</Anchors>
+			</Button>
+		</Frames>
+	</Frame>
+
+	<Frame name="MZRosterScroll" parent="MZPageRoster">
+		<Anchors>
+			<Anchor point="TOPLEFT" relativeTo="MZPageRosterBody" relativePoint="TOPLEFT" x="0" y="-26"/>
+			<Anchor point="BOTTOMRIGHT" relativeTo="MZPageRosterBody" relativePoint="BOTTOMRIGHT"/>
+		</Anchors>
+		<Layers>
+			<Layer level="ARTWORK">
+				<Texture name="$parentTrack" file="Interface\ChatFrame\ChatFrameBackground">
+					<Size x="1"/>
+					<Anchors>
+						<Anchor point="TOPRIGHT" x="-3" y="0"/>
+						<Anchor point="BOTTOMRIGHT" x="-3" y="0"/>
+					</Anchors>
+					<Color r="0.106" g="0.098" b="0.086" a="0.18"/>
+				</Texture>
+				<Texture name="MZRosterScrollThumb" file="Interface\ChatFrame\ChatFrameBackground">
+					<Size x="3" y="24"/>
+					<Anchors>
+						<Anchor point="TOPRIGHT" x="-3" y="0"/>
+					</Anchors>
+					<Color r="0.702" g="0.196" b="0.157" a="0.75"/>
+				</Texture>
+			</Layer>
+		</Layers>
+		<Frames>
+			<ScrollFrame name="MZRosterScrollFrame">
+				<Anchors>
+					<Anchor point="TOPLEFT"/>
+					<Anchor point="BOTTOMRIGHT" x="-10" y="0"/>
+				</Anchors>
+				<ScrollChild>
+					<Frame name="MZRosterScrollChild">
+						<Size x="10" y="10"/>
+					</Frame>
+				</ScrollChild>
+			</ScrollFrame>
+		</Frames>
+	</Frame>
+</Ui>

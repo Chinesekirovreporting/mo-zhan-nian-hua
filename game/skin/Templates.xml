@@ -1,0 +1,250 @@
+<Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/..\FrameXML\UI.xsd">
+	<!-- 动态控件的外观。game/view/Widget.lua 用 inherits 创建，和这个文件一一对应。 -->
+
+	<Button name="MZButtonTemplate" virtual="true" enableMouse="true">
+		<Layers>
+			<Layer level="BACKGROUND">
+				<Texture name="$parentBg" file="Interface\ChatFrame\ChatFrameBackground" setAllPoints="true">
+					<Color r="0.949" g="0.925" b="0.867" a="1"/>
+				</Texture>
+			</Layer>
+			<Layer level="BORDER">
+				<Texture name="$parentLineT" file="Interface\ChatFrame\ChatFrameBackground">
+					<Size y="1"/>
+					<Anchors>
+						<Anchor point="TOPLEFT"/>
+						<Anchor point="TOPRIGHT"/>
+					</Anchors>
+					<Color r="0.106" g="0.098" b="0.086" a="0.55"/>
+				</Texture>
+				<Texture name="$parentLineB" file="Interface\ChatFrame\ChatFrameBackground">
+					<Size y="1"/>
+					<Anchors>
+						<Anchor point="BOTTOMLEFT"/>
+						<Anchor point="BOTTOMRIGHT"/>
+					</Anchors>
+					<Color r="0.106" g="0.098" b="0.086" a="0.55"/>
+				</Texture>
+				<Texture name="$parentLineL" file="Interface\ChatFrame\ChatFrameBackground">
+					<Size x="1"/>
+					<Anchors>
+						<Anchor point="TOPLEFT"/>
+						<Anchor point="BOTTOMLEFT"/>
+					</Anchors>
+					<Color r="0.106" g="0.098" b="0.086" a="0.55"/>
+				</Texture>
+				<Texture name="$parentLineR" file="Interface\ChatFrame\ChatFrameBackground">
+					<Size x="1"/>
+					<Anchors>
+						<Anchor point="TOPRIGHT"/>
+						<Anchor point="BOTTOMRIGHT"/>
+					</Anchors>
+					<Color r="0.106" g="0.098" b="0.086" a="0.55"/>
+				</Texture>
+			</Layer>
+		</Layers>
+		<ButtonText>
+			<Anchors>
+				<Anchor point="CENTER"/>
+			</Anchors>
+		</ButtonText>
+		<NormalFont style="GameFontHighlight"/>
+		<NormalTextColor r="0.106" g="0.098" b="0.086"/>
+		<HighlightTexture file="Interface\ChatFrame\ChatFrameBackground" alphaMode="ADD">
+			<Color r="1" g="1" b="1" a="0"/>
+		</HighlightTexture>
+		<PushedTextOffset>
+			<AbsDimension x="0" y="-1"/>
+		</PushedTextOffset>
+		<Scripts>
+			<OnLoad>
+				self:RegisterForClicks("AnyUp")
+			</OnLoad>
+			<OnEnter>
+				local bg = _G[self:GetName() .. "Bg"]
+				if not bg then return end
+				if self.tone == "primary" then
+					bg:SetVertexColor(0.839, 0.325, 0.243, 1)
+				else
+					bg:SetVertexColor(0.831, 0.796, 0.706, 1)
+				end
+			</OnEnter>
+			<OnLeave>
+				local bg = _G[self:GetName() .. "Bg"]
+				local fs = self:GetFontString()
+				if self.tone == "primary" then
+					if bg then bg:SetVertexColor(0.702, 0.196, 0.157, 1) end
+					if fs then fs:SetTextColor(0.949, 0.925, 0.867, 1) end
+				else
+					if bg then bg:SetVertexColor(0.949, 0.925, 0.867, 1) end
+					if fs then fs:SetTextColor(0.106, 0.098, 0.086, 1) end
+				end
+			</OnLeave>
+		</Scripts>
+	</Button>
+
+	<EditBox name="MZEditBoxTemplate" virtual="true" autoFocus="false" letters="12" enableMouse="true">
+		<Layers>
+			<Layer level="BACKGROUND">
+				<Texture name="$parentBg" file="Interface\ChatFrame\ChatFrameBackground" setAllPoints="true">
+					<Color r="0.949" g="0.925" b="0.867" a="1"/>
+				</Texture>
+			</Layer>
+			<Layer level="BORDER">
+				<Texture name="$parentLineT" file="Interface\ChatFrame\ChatFrameBackground">
+					<Size y="1"/>
+					<Anchors>
+						<Anchor point="TOPLEFT"/>
+						<Anchor point="TOPRIGHT"/>
+					</Anchors>
+					<Color r="0.106" g="0.098" b="0.086" a="0.55"/>
+				</Texture>
+				<Texture name="$parentLineB" file="Interface\ChatFrame\ChatFrameBackground">
+					<Size y="1"/>
+					<Anchors>
+						<Anchor point="BOTTOMLEFT"/>
+						<Anchor point="BOTTOMRIGHT"/>
+					</Anchors>
+					<Color r="0.106" g="0.098" b="0.086" a="0.55"/>
+				</Texture>
+				<Texture name="$parentLineL" file="Interface\ChatFrame\ChatFrameBackground">
+					<Size x="1"/>
+					<Anchors>
+						<Anchor point="TOPLEFT"/>
+						<Anchor point="BOTTOMLEFT"/>
+					</Anchors>
+					<Color r="0.106" g="0.098" b="0.086" a="0.55"/>
+				</Texture>
+				<Texture name="$parentLineR" file="Interface\ChatFrame\ChatFrameBackground">
+					<Size x="1"/>
+					<Anchors>
+						<Anchor point="TOPRIGHT"/>
+						<Anchor point="BOTTOMRIGHT"/>
+					</Anchors>
+					<Color r="0.106" g="0.098" b="0.086" a="0.55"/>
+				</Texture>
+			</Layer>
+		</Layers>
+		<FontString inherits="GameFontHighlight">
+			<Color r="0.106" g="0.098" b="0.086"/>
+		</FontString>
+		<TextInsets>
+			<AbsInset left="8" right="8" top="0" bottom="0"/>
+		</TextInsets>
+		<Scripts>
+			<OnEscapePressed>
+				self:ClearFocus()
+			</OnEscapePressed>
+			<OnEnterPressed>
+				self:ClearFocus()
+			</OnEnterPressed>
+		</Scripts>
+	</EditBox>
+
+	<Frame name="MZCardTemplate" virtual="true">
+		<Size y="76"/>
+		<Layers>
+			<Layer level="BACKGROUND">
+				<Texture name="$parentBg" file="Interface\ChatFrame\ChatFrameBackground" setAllPoints="true">
+					<Color r="0.949" g="0.925" b="0.867" a="1"/>
+				</Texture>
+			</Layer>
+			<Layer level="BORDER">
+				<Texture file="Interface\ChatFrame\ChatFrameBackground">
+					<Size y="1"/>
+					<Anchors>
+						<Anchor point="TOPLEFT"/>
+						<Anchor point="TOPRIGHT"/>
+					</Anchors>
+					<Color r="0.106" g="0.098" b="0.086" a="0.55"/>
+				</Texture>
+				<Texture file="Interface\ChatFrame\ChatFrameBackground">
+					<Size y="1"/>
+					<Anchors>
+						<Anchor point="BOTTOMLEFT"/>
+						<Anchor point="BOTTOMRIGHT"/>
+					</Anchors>
+					<Color r="0.106" g="0.098" b="0.086" a="0.55"/>
+				</Texture>
+				<Texture file="Interface\ChatFrame\ChatFrameBackground">
+					<Size x="1"/>
+					<Anchors>
+						<Anchor point="TOPLEFT"/>
+						<Anchor point="BOTTOMLEFT"/>
+					</Anchors>
+					<Color r="0.106" g="0.098" b="0.086" a="0.55"/>
+				</Texture>
+				<Texture file="Interface\ChatFrame\ChatFrameBackground">
+					<Size x="1"/>
+					<Anchors>
+						<Anchor point="TOPRIGHT"/>
+						<Anchor point="BOTTOMRIGHT"/>
+					</Anchors>
+					<Color r="0.106" g="0.098" b="0.086" a="0.55"/>
+				</Texture>
+			</Layer>
+			<Layer level="OVERLAY">
+				<FontString name="$parentTitle" inherits="GameFontNormal" justifyH="LEFT">
+					<FontHeight>
+						<AbsValue val="14"/>
+					</FontHeight>
+					<Color r="0.106" g="0.098" b="0.086"/>
+					<Anchors>
+						<Anchor point="TOPLEFT" x="14" y="-12"/>
+						<Anchor point="RIGHT" x="-108" y="0"/>
+					</Anchors>
+				</FontString>
+				<FontString name="$parentDesc" inherits="GameFontHighlight" justifyH="LEFT" justifyV="TOP">
+					<Color r="0.435" g="0.408" b="0.361"/>
+					<Anchors>
+						<Anchor point="TOPLEFT" relativeTo="$parentTitle" relativePoint="BOTTOMLEFT" x="0" y="-6"/>
+						<Anchor point="RIGHT" x="-108" y="0"/>
+					</Anchors>
+				</FontString>
+			</Layer>
+		</Layers>
+	</Frame>
+
+	<Frame name="MZPageTemplate" virtual="true" hidden="true">
+		<Anchors>
+			<Anchor point="TOPLEFT" x="20" y="-18"/>
+			<Anchor point="BOTTOMRIGHT" x="-20" y="18"/>
+		</Anchors>
+		<Layers>
+			<Layer level="ARTWORK">
+				<FontString name="$parentTitle" inherits="GameFontNormal" justifyH="LEFT">
+					<FontHeight>
+						<AbsValue val="15"/>
+					</FontHeight>
+					<Color r="0.106" g="0.098" b="0.086"/>
+					<Anchors>
+						<Anchor point="TOPLEFT"/>
+					</Anchors>
+				</FontString>
+				<FontString name="$parentSubtitle" inherits="GameFontHighlight" justifyH="LEFT">
+					<Color r="0.435" g="0.408" b="0.361"/>
+					<Anchors>
+						<Anchor point="TOPLEFT" relativeTo="$parentTitle" relativePoint="BOTTOMLEFT" x="0" y="-5"/>
+						<Anchor point="RIGHT" x="0" y="0"/>
+					</Anchors>
+				</FontString>
+				<Texture name="$parentRule" file="Interface\ChatFrame\ChatFrameBackground">
+					<Size y="1"/>
+					<Anchors>
+						<Anchor point="TOPLEFT" y="-48"/>
+						<Anchor point="TOPRIGHT" y="-48"/>
+					</Anchors>
+					<Color r="0.106" g="0.098" b="0.086" a="0.35"/>
+				</Texture>
+			</Layer>
+		</Layers>
+		<Frames>
+			<Frame name="$parentBody">
+				<Anchors>
+					<Anchor point="TOPLEFT" y="-62"/>
+					<Anchor point="BOTTOMRIGHT"/>
+				</Anchors>
+			</Frame>
+		</Frames>
+	</Frame>
+</Ui>

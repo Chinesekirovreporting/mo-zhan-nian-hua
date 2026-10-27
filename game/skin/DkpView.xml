@@ -1,0 +1,4 @@
+<Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/..\FrameXML\UI.xsd">
+	<!-- 子窗口：公会 DKP。成员行和记分控件随数据生成，见 game/view/views/DkpView.lua。 -->
+	<Frame name="MZPageDkp" parent="MZMainContent" inherits="MZPageTemplate" hidden="true"/>
+</Ui>

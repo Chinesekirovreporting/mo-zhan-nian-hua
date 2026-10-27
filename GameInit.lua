@@ -1,6 +1,6 @@
 -- ============================================================
--- GameInit · 组合根（根目录仅本文件 + toc）
--- MZ.App ← Core + Skin + MainUI；ADDON_LOADED 后 Init → Ready
+-- GameInit · 组合根
+-- ADDON_LOADED 走系统事件。startApp → Ready。每帧更新在 Hook 的驱动帧上。
 -- ============================================================
 local ADDON_NAME, MZ = ...
 
@@ -8,10 +8,9 @@ local App = MZ.App
 local started = false
 
 local function Compose()
-	App:Compose{
-		Skin = App.Skin,
-		UI   = App.UI,
-	}
+	App:Compose({
+		UI = App.UI,
+	})
 end
 
 local function Start()
@@ -19,18 +18,18 @@ local function Start()
 	started = true
 
 	Compose()
-	App:Init()
+	App:startApp()
 	App:Ready()
-	App.Core.Log:Debug("GameInit 完成 · 页面由 Views 已注册")
+	App.logManager:Debug("GameInit 完成 · 子窗口由 View 注册")
 end
 
 local function OnAddonLoaded(_, name)
 	if name ~= ADDON_NAME then return end
-	App.Core.Event:Off("ADDON_LOADED", OnAddonLoaded)
+	App.eventManager:Off("ADDON_LOADED", OnAddonLoaded)
 	Start()
 end
 
-App.Core.Event:On("ADDON_LOADED", OnAddonLoaded)
+App.eventManager:On("ADDON_LOADED", OnAddonLoaded)
 
 App.GameInit = {
 	Compose = Compose,

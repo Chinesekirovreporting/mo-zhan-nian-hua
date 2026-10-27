@@ -10,37 +10,55 @@
 ## X-Category: Guild
 ## X-Website: 
 
-# --- Core ---
-Core\Init.lua
-Core\Log.lua
-Core\Store.lua
-Core\Event.lua
-Core\Time.lua
-Core\Net.lua
-Core\Checkers.lua
+# --- 插件表。后面的文件都往 MZ.App 上挂 ---
+core\Init.lua
 
-# --- App 门面 ---
-App\App.lua
+# --- Lua 语法。不出现暴雪接口 ---
+framework\Class.lua
 
-# --- Skin ---
-Skin\Init.lua
-Skin\Draw.lua
-Skin\Button.lua
-Skin\EditBox.lua
-Skin\Card.lua
-Skin\Scroll.lua
-Skin\Tab.lua
-Skin\Page.lua
-Skin\Window.lua
+# --- 插件规范。每个管理器一个文件夹，对外只暴露 *Manager ---
+core\manager\EventManager\EventEmitter.lua
+core\manager\EventManager\EventBus.lua
+core\manager\Manager.lua
+core\abstract\AbstractModule.lua
+core\abstract\AbstractView.lua
+core\Hook.lua
+core\manager\EventManager\Names.lua
+core\manager\EventManager\SystemEvent.lua
+core\manager\EventManager\CodeEvent.lua
+core\manager\EventManager\EventManager.lua
+core\manager\NetManager\NetManager.lua
+core\manager\LogManager\LogManager.lua
+core\manager\StoreManager\StoreManager.lua
+core\manager\TimerManager\TimerManager.lua
 
-# --- MainUI + Views ---
-MainUI\MainUI.lua
-Views\Activity.lua
-Views\Dkp.lua
-Views\Checkers.lua
-Views\Timer.lua
-Views\Roster.lua
-Views\Settings.lua
+# --- 玩法：事件名、模块、门面，然后总门面 ---
+game\Names.lua
+game\module\CheckersModule.lua
+game\module\DkpModule.lua
+game\module\TimerModule.lua
+game\module\RosterModule.lua
+game\GameModules.lua
+core\App.lua
 
-# --- 组合根（仅留在根目录）---
+game\skin\Templates.xml
+game\skin\MainUI.xml
+game\skin\ActivityView.xml
+game\skin\CheckersView.xml
+game\skin\DkpView.xml
+game\skin\TimerView.xml
+game\skin\RosterView.xml
+game\skin\SettingsView.xml
+
+game\view\Widget.lua
+game\view\MainUI.lua
+game\view\views\ActivityView.lua
+game\view\views\CheckersView.lua
+game\view\views\DkpView.lua
+game\view\views\TimerView.lua
+game\view\views\RosterView.lua
+game\view\views\SettingsView.lua
+
+# --- 命令，然后组合根 ---
+core\Command.lua
 GameInit.lua
