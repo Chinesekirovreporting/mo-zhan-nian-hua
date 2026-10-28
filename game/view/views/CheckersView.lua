@@ -21,7 +21,7 @@ local cellBtn  = {}               -- [id] = Button
 local seatRow  = {}               -- [1..6] = Frame
 local fsState, fsHint, fsWatch, fsNames
 local btnMain, btnNew, btnDemo
-local sel = nil                   -- { path = {id...}, cur = id, visited = {}, legal = {} }
+local page
 
 -- ------------------------------------------------------------
 -- 小工具
@@ -55,14 +55,13 @@ end
 -- 状态自动写上去的提示（链路异常 / 座位被抢 / 房主拒绝…）：
 -- 条件消失后必须能自己撤掉，否则会一直黏在提示行上，
 -- 把「点高亮处落子」这类走子提示挤没。
-local autoHint = nil
 local function SetAutoHint(text)
 	if text then
-		autoHint = text
+		page.autoHint = text
 		Hint(text)
 	else
-		if autoHint and fsHint and fsHint:GetText() == autoHint then Hint("") end
-		autoHint = nil
+		if page.autoHint and fsHint and fsHint:GetText() == page.autoHint then Hint("") end
+		page.autoHint = nil
 	end
 end
 
@@ -88,34 +87,34 @@ local function RefreshBoard()
 end
 
 local function ApplySel()
-	if not sel then return end
-	cellBtn[sel.cur].selRing:Show()
-	for id in pairs(sel.legal or {}) do
+	if not page.sel then return end
+	cellBtn[page.sel.cur].selRing:Show()
+	for id in pairs(page.sel.legal or {}) do
 		cellBtn[id].hiRing:Show()
 	end
 end
 
 local function ClearSel()
-	sel = nil
+	page.sel = nil
 	RefreshBoard()
 end
 
 local function RecalcSel()
-	if not sel then return end
+	if not page.sel then return end
 	local legal = {}
-	if #sel.path == 1 then
-		for _, t in ipairs(G:StepTargets(G.board, sel.cur)) do legal[t] = true end
+	if #page.sel.path == 1 then
+		for _, t in ipairs(G:StepTargets(G.board, page.sel.cur)) do legal[t] = true end
 	end
-	for _, t in ipairs(G:JumpTargets(G.board, sel.cur)) do
-		if not sel.visited[t] then legal[t] = true end
+	for _, t in ipairs(G:JumpTargets(G.board, page.sel.cur)) do
+		if not page.sel.visited[t] then legal[t] = true end
 	end
-	sel.legal = legal
+	page.sel.legal = legal
 end
 
 local function SubmitSel()
-	if not sel then return end
-	local path = sel.path
-	sel = nil
+	if not page.sel then return end
+	local path = page.sel.path
+	page.sel = nil
 	local ok, err = G:SubmitMove(path)
 	Hint(ok and "" or (err or "这一手没走成"))
 	RefreshBoard()
@@ -124,7 +123,7 @@ end
 local function OnCellClick(id, button)
 	-- 右键：连跳途中落定，否则取消选择
 	if button == "RightButton" then
-		if sel and #sel.path >= 2 then
+		if page.sel and #page.sel.path >= 2 then
 			SubmitSel()
 		else
 			ClearSel()
@@ -148,17 +147,17 @@ local function OnCellClick(id, button)
 		return
 	end
 
-	if sel and sel.legal and sel.legal[id] then
-		local isStep = (#sel.path == 1) and G:IsNeighbor(sel.cur, id)
-		sel.path[#sel.path + 1] = id
-		sel.visited[id] = true
-		sel.cur = id
+	if page.sel and page.sel.legal and page.sel.legal[id] then
+		local isStep = (#page.sel.path == 1) and G:IsNeighbor(page.sel.cur, id)
+		page.sel.path[#page.sel.path + 1] = id
+		page.sel.visited[id] = true
+		page.sel.cur = id
 		if isStep then
 			SubmitSel()
 			return
 		end
 		RecalcSel()
-		if next(sel.legal) == nil then
+		if next(page.sel.legal) == nil then
 			SubmitSel()
 		else
 			RefreshBoard()
@@ -168,7 +167,7 @@ local function OnCellClick(id, button)
 		return
 	end
 
-	if sel and id == sel.cur then
+	if page.sel and id == page.sel.cur then
 		ClearSel()
 		Hint("")
 		return
@@ -176,7 +175,7 @@ local function OnCellClick(id, button)
 
 	if G.board[id] == my then
 		ClearSel()
-		sel = { path = { id }, cur = id, visited = { [id] = true } }
+		page.sel = { path = { id }, cur = id, visited = { [id] = true } }
 		RecalcSel()
 		RefreshBoard()
 		ApplySel()
@@ -221,7 +220,7 @@ local function BuildBoard(parent)
 		b:RegisterForClicks("LeftButtonUp", "RightButtonUp")
 		App.Hook:Bind(b, "OnClick", function(self, button) OnCellClick(self.id, button) end)
 		App.Hook:Bind(b, "OnEnter", function(self)
-			if sel and sel.legal and sel.legal[self.id] then
+			if page.sel and page.sel.legal and page.sel.legal[self.id] then
 				self.dot:SetAlpha(1)
 			end
 		end)
@@ -474,31 +473,42 @@ function CheckersView:ctor()
 		order    = 12,
 		frame    = "MZPageCheckers",
 	})
+	self.sel = nil
+	self.autoHint = nil
 end
 
 function CheckersView:onBuild(p, b)
-		BuildBoard(b)
-		BuildPanel(b)
+	BuildBoard(b)
+	BuildPanel(b)
 
-		local function OnPanelShow()
-			G:Send("R")
-			Refresh()
-			if App.Core.Net and not App.Core.Net:Available() then
-				Hint("未组队 / 未入公会：这一桌只有你自己看得见。")
-			end
+	local function OnPanelShow()
+		G:SetWatching(true)
+		G:RequestSnapshot()
+		Refresh()
+		if App.Core.Net and not App.Core.Net:Available() then
+			Hint("未组队 / 未入公会：这一桌只有你自己看得见。")
 		end
-
-		-- 页签每次被切出来；主面板每次被打开，都重新要一次房主快照
-		App.Hook:Attach(p, "OnShow", OnPanelShow)
-		if App.UI.frame then
-			App.Hook:Attach(App.UI.frame, "OnShow", function() G:Send("R") end)
-		end
-		OnPanelShow()
 	end
 
-CheckersView:new():register()
+	App.Hook:Attach(p, "OnShow", OnPanelShow)
+	OnPanelShow()
+end
 
+page = CheckersView:new()
+page:register()
 
-App.eventManager:on(App.Ev.CHECKERS_CHANGED, function()
+local frame = App.UI and App.UI.frame
+if frame then
+	App.Hook:Attach(frame, "OnShow", function()
+		G:SetWatching(true)
+		G:RequestSnapshot()
+	end)
+	App.Hook:Attach(frame, "OnHide", function()
+		G:SetWatching(false)
+	end)
+	if frame:IsShown() then G:SetWatching(true) end
+end
+
+G:on("sync", function()
 	Refresh()
 end)

@@ -46,8 +46,9 @@ function TimerView:onBuild()
 	timer:Ensure()
 	box:SetText(tostring(App.Core.Store:GetKey("timerMinutes", 3)))
 
-	local function Refresh()
-		display:SetText(App.Core.Time:Format(timer.remain))
+	local function Refresh(model)
+		model = model or timer.model
+		display:SetText(App.Core.Time:Format(model.remain))
 		status:SetText(timer:StatusText())
 	end
 
@@ -55,13 +56,13 @@ function TimerView:onBuild()
 		display:SetTextColor(C.ink[1], C.ink[2], C.ink[3], 1)
 	end
 
-	timer:on("changed", function(why)
+	timer:on("sync", function(model, why)
 		if why == "done" then
 			display:SetTextColor(C.cinnabar[1], C.cinnabar[2], C.cinnabar[3], 1)
 		elseif why == "start" or why == "reset" then
 			Ink()
 		end
-		Refresh()
+		Refresh(model)
 	end)
 
 	App.Hook:Bind(startBtn, "OnClick", function()

@@ -1,0 +1,90 @@
+---
+description: 墨战年华插件的分层、模块、数据体和加载顺序
+alwaysApply: true
+---
+
+# 架构
+
+根目录只有 `core`、`game`。`MoZhanNianHua.toc` 和 `GameInit.lua` 留在根上，游戏靠 `.toc` 认插件。依赖只向下：`game` 用 `core`，`core` 不写某一页玩法。
+
+```mermaid
+flowchart TD
+  GameInit --> App
+  App --> Managers
+  App --> GameModules
+  GameModules --> Modules
+  Modules --> Vos
+  Views --> GameModules
+  Views --> MainUI
+  Modules --> Managers
+  Managers --> Hook
+```
+
+## 角色
+
+- `Vo`（`game/model/vo/*Vo.lua`）：一条记录。字段写在 `ctor` 之前，创建用 `Vo:new`。存档根表和空列表可以是普通表。
+- `Module`（`game/module/*/*Module.lua`）：状态在 `self` 或 `self.model`。逻辑是 `function XModule:方法()`。写入后 `self:sync(why)`，监听拿到的是 `self.model`。界面和命令只通过 `App.GameModules` 拿模块。
+- `View`（`game/view/views/`）：只画和接点击。静态骨架在 `game/skin`，随数据生成的行留在 View。主窗口是 `game/view/MainUI.lua`，动态控件是 `game/view/Widget.lua`。
+- `Manager`（`core/manager/*/`）：通道和基础设施。暴雪事件走 `App.system` 的 `On` / `Once` / `Off`，名字在 `App.NetEvents`。代码事件走 `App.eventManager` 的 `on` / `emit`，名字在 `App.GlobalEvents`。插件消息留在 `NetManager`，不进 `EventManager`。
+- 类（`core/utils/Class.lua` 的 `newclz`）：子类构造调用父类表，例如 `App.AbstractModule.ctor(self)`。`cls.super` 只给工厂用。`Hook` 上，自己的框用 `Bind` / `Listen`；`Attach` / `After` 只挂本插件框体；施法、移动、宏拒绝。
+
+## 加载
+
+数据体先于使用它的模块。`SystemEvent` 先于 `NetManager`。主窗口先于 `view/views`。
+
+## 实例
+
+正例：字段先写在类上，构造里再赋给实例。
+
+```lua
+local TimerVo = App.newclz("TimerVo")
+
+TimerVo.remain = 0
+TimerVo.running = false
+
+function TimerVo:ctor()
+	self.remain = 0
+	self.running = false
+end
+```
+
+正例：点击进模块方法。新界面听 `sync`，读 `model`。
+
+```lua
+local timer = App.GameModules.Timer
+
+timer:on("sync", function(model)
+	display:SetText(App.Core.Time:Format(model.remain))
+end)
+
+App.Hook:Bind(startBtn, "OnClick", function()
+	timer:Start(box:GetText())
+end)
+```
+
+`TimerView` 现在听 `changed`，可以留着。同一次变化不要再发一条全局事件。
+
+反例：`TimerModule:sync` 把 Vo 抄回模块自己，又发第二条。新代码只留 `self.model` 和一次 `sync`。
+
+```lua
+function TimerModule:sync(why)
+	self.remain = self.model.remain
+	App.AbstractModule.sync(self, why)
+	self:emit("changed", why)
+end
+```
+
+反例：文件级状态、文件级函数。选子和刷新放在视图实例上，写成 `function CheckersView:方法()`。
+
+```lua
+local sel = nil
+
+local function Refresh()
+end
+```
+
+反例：业务记录手写表。成员用 `App.DkpMemberVo:new(ep, gp)`。构造调用 `App.Manager.ctor(self)`，不写 `self.super`。
+
+## 改动边界
+
+可以挪文件、改成员形式、补 Vo。跳棋字母仍是 `H/B/C/Q/W/P/E/R`。积分加减、倒计时文案和 `RAID` / `PARTY` / `SAY`、`MoZhanNianHuaDB` 已有的键保持原样。

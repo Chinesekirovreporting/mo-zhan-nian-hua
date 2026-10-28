@@ -111,3 +111,4 @@ end
 
 local system = SystemEvent:new()
 App._modules.System = system
+App.system = system

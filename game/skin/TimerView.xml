@@ -1,5 +1,5 @@
 <Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/..\FrameXML\UI.xsd">
-	<!-- 子窗口：开怪计时。走表和通报在 game/module/TimerModule.lua。 -->
+	<!-- 子窗口：开怪计时。走表和通报在 game/module/TimerModule/TimerModule.lua。 -->
 	<Frame name="MZPageTimer" parent="MZMainContent" inherits="MZPageTemplate" hidden="true"/>
 
 	<Frame name="MZTimerChrome" parent="MZPageTimer">

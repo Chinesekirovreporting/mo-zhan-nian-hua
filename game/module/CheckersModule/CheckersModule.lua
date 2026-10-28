@@ -2,6 +2,18 @@
 -- CheckersModule · 六角跳棋
 --   棋盘几何 / 走子规则 / 座位·准备·观战 / 房主权威同步
 --   本文件不写一行绘制代码，UI 见 game/view/views/CheckersView.lua
+--
+-- 同步 · App.SyncScheme.HostSnapshot（房主权威 + 全量快照）
+--   频道：一个队伍频道（有团队用 RAID，否则 PARTY，都没有才 INSTANCE_CHAT），
+--         在公会时再追加 GUILD。前缀 MZCHK。广播，不是点对点。
+--   封包：明文 H/B/C/Q/W/P/E/R，不改成 ~S。H 座位与阶段，B 棋盘。
+--         房主约每 4 秒全量广播。走子 Q 由房主裁决后再广播，只有 Q| 去重。
+--         座位声明 C 各端先落地，快照再纠偏。心跳 W/P 与补报入座 8 秒。
+--         非房主约每 2 秒用 R 主动要快照。旧序号丢掉，状态包重复无害。
+--   时机：点击（入座、准备、走子、开局）才发包。逻辑先攒到 1 秒。
+--         帧回调只抽 NetManager 队列，不按帧同步。收包不进 EventManager。
+--   本机：sync 把棋盘交给界面，不发插件消息，也不再发全局事件。
+--   不用锁步，也不用对等式 CRDT。
 -- ============================================================
 local ADDON_NAME, MZ = ...
 
@@ -10,148 +22,50 @@ local Net = App._modules.Net
 local Log = App._modules.Log
 
 local CheckersModule = App.newclz("CheckersModule", App.AbstractModule)
--- 几何常量挂在类上。G 是类表别名；座位和棋盘在实例上。
+-- 几何在 CheckersBoard。这里挂到类上，界面仍从模块读。
 local G = CheckersModule
+local Board = App.CheckersBoard
 
--- ------------------------------------------------------------
--- 1 · 棋盘几何
---   17 行星形，共 121 格。u = 半格横坐标（u/2 = 一格间距），v = 行号（自上而下）
---   ARM：0 = 中央区，1..6 = 六个营（1 南 · 2 东南 · 3 东北 · 4 北 · 5 西北 · 6 西南）
---   对面营：1<->4、2<->5、3<->6，即 (arm + 2) % 6 + 1
--- ------------------------------------------------------------
-local ROWLEN = { 1, 2, 3, 4, 13, 12, 11, 10, 9, 10, 11, 12, 13, 4, 3, 2, 1 }
+G.ROWLEN = Board.ROWLEN
+G.ARM = Board.ARM
+G.CELL_COUNT = Board.CELL_COUNT
+G.PER_ARM = Board.PER_ARM
+G.SEAT_COUNT = Board.SEAT_COUNT
+G.SEAT_NAMES = Board.SEAT_NAMES
+G.ARM_LABEL = Board.ARM_LABEL
+G.SEAT_COLORS = Board.SEAT_COLORS
+G.cells = Board.cells
+G.byKey = Board.byKey
+G.ids = Board.ids
+G.neighbors = Board.neighbors
+G.jumps = Board.jumps
 
-local ARM = {
-	4,4,4,4,4,4,4,4,4,4,5,5,5,5,0,
-	0,0,0,0,3,3,3,3,5,5,5,0,0,0,0,
-	0,0,3,3,3,5,5,0,0,0,0,0,0,0,3,
-	3,5,0,0,0,0,0,0,0,0,3,0,0,0,0,
-	0,0,0,0,0,6,0,0,0,0,0,0,0,0,2,
-	6,6,0,0,0,0,0,0,0,2,2,6,6,6,0,
-	0,0,0,0,0,2,2,2,6,6,6,6,0,0,0,
-	0,0,2,2,2,2,1,1,1,1,1,1,1,1,1,
-	1,
-}
-
-G.CELL_COUNT = 121
-G.PER_ARM    = 10
-G.SEAT_COUNT = 6
-
-G.SEAT_NAMES = { "一", "二", "三", "四", "五", "六" }
-G.ARM_LABEL  = { "南", "东南", "东北", "北", "西北", "西南" }
-
--- 六色棋子：朱砂 / 藤黄 / 苔绿 / 石青 / 靛蓝 / 紫檀
-G.SEAT_COLORS = {
-	{ 0.760, 0.235, 0.196 },
-	{ 0.851, 0.647, 0.216 },
-	{ 0.353, 0.573, 0.310 },
-	{ 0.204, 0.502, 0.588 },
-	{ 0.271, 0.365, 0.702 },
-	{ 0.514, 0.298, 0.573 },
-}
-
--- 邻接偏移（u, v）：横一格 = u±2；斜一格 = u±1, v±1
-local NB = { { 2, 0 }, { -2, 0 }, { 1, 1 }, { -1, 1 }, { 1, -1 }, { -1, -1 } }
-
-local function KeyOf(u, v) return u * 64 + v end
-
-local cells, byKey, ids = {}, {}, {}
-do
-	local id = 0
-	for v, len in ipairs(ROWLEN) do
-		local odd = (v % 2 == 1)
-		local i0 = odd and -math.floor((len - 1) / 2) or -math.floor(len / 2)
-		for k = 0, len - 1 do
-			local u = odd and (2 * (i0 + k)) or (2 * (i0 + k) + 1)
-			id = id + 1
-			cells[id] = {
-				id   = id,
-				u    = u,
-				v    = v,
-				x    = u / 2,        -- 横向（单位 = 一格间距）
-				y    = 9 - v,        -- 纵向（单位 = 行高，向上为正）
-				arm  = ARM[id] or 0,
-			}
-			byKey[KeyOf(u, v)] = id
-			ids[#ids + 1] = id
-		end
-	end
+function CheckersModule:KeyOf(u, v)
+	return Board.KeyOf(u, v)
 end
 
-G.cells = cells
-G.neighbors, G.jumps = {}, {}
-for _, c in ipairs(cells) do
-	local nbs, jps = {}, {}
-	for _, d in ipairs(NB) do
-		local n = byKey[KeyOf(c.u + d[1], c.v + d[2])]
-		if n then
-			nbs[#nbs + 1] = n
-			local land = byKey[KeyOf(c.u + d[1] * 2, c.v + d[2] * 2)]
-			if land then jps[#jps + 1] = { mid = n, dest = land } end
-		end
-	end
-	G.neighbors[c.id] = nbs
-	G.jumps[c.id]     = jps
-end
-
--- ------------------------------------------------------------
--- 2 · 规则
--- ------------------------------------------------------------
 function CheckersModule:IsNeighbor(a, b)
-	for _, n in ipairs(self.neighbors[a] or {}) do
-		if n == b then return true end
-	end
-	return false
+	return Board.IsNeighbor(a, b)
 end
 
---- 单步落点（相邻且为空）
 function CheckersModule:StepTargets(board, id)
-	local out = {}
-	for _, n in ipairs(self.neighbors[id] or {}) do
-		if board[n] == 0 then out[#out + 1] = n end
-	end
-	return out
+	return Board.StepTargets(board, id)
 end
 
---- 跳一步的落点（中间隔一子，落点为空）
 function CheckersModule:JumpTargets(board, id)
-	local out = {}
-	for _, j in ipairs(self.jumps[id] or {}) do
-		if board[j.mid] ~= 0 and board[j.dest] == 0 then out[#out + 1] = j.dest end
-	end
-	return out
+	return Board.JumpTargets(board, id)
 end
 
---- a 跳到 b 的中间格；不成立返回 nil
 function CheckersModule:JumpMid(board, a, b)
-	for _, j in ipairs(self.jumps[a] or {}) do
-		if j.dest == b and board[j.mid] ~= 0 and board[b] == 0 then return j.mid end
-	end
-	return nil
+	return Board.JumpMid(board, a, b)
 end
 
---- 整条路径是否合法：单步（相邻空位）或若干次连跳
 function CheckersModule:ValidPath(board, path)
-	if #path < 2 then return false end
-	local from, first = path[1], path[2]
-	if board[from] == 0 then return false end
-	if #path == 2 and self:IsNeighbor(from, first) and board[first] == 0 then
-		return true
-	end
-	local visited = { [from] = true }
-	local cur = from
-	for i = 2, #path do
-		local to = path[i]
-		if visited[to] then return false end
-		if not self:JumpMid(board, cur, to) then return false end
-		visited[to] = true
-		cur = to
-	end
-	return true
+	return Board.ValidPath(board, path)
 end
 
 function CheckersModule:TargetArm(seat)
-	return (seat + 2) % 6 + 1
+	return Board.TargetArm(seat)
 end
 
 --- 两人局时，两人是否坐成了对面的营（互为终点）
@@ -172,7 +86,7 @@ end
 function CheckersModule:PiecesInArm(seat, arm)
 	local board, n = self.board, 0
 	for i = 1, 121 do
-		if cells[i].arm == arm and board[i] == seat then n = n + 1 end
+		if G.cells[i].arm == arm and board[i] == seat then n = n + 1 end
 	end
 	return n
 end
@@ -187,23 +101,27 @@ end
 
 -- ------------------------------------------------------------
 -- 3 · 状态
+-- 同步：本机状态。Changed 只刷新界面，不发插件消息。
 -- ------------------------------------------------------------
-local WATCH_TTL   = 24   -- 观战者无心跳多久后清掉（秒）
-local PING_EVERY  = 8    -- 心跳间隔
-local HOST_EVERY  = 4    -- 房主状态广播间隔
-local SEAT_STALE  = 50   -- 座位上的人多久没动静视为掉线（秒）
-local TURN_SKIP   = 120  -- 轮到的人多久没动静就自动跳过（秒）
+G.WATCH_TTL  = 24   -- 观战者无心跳多久后清掉（秒）
+G.PING_EVERY = 8    -- 心跳间隔
+G.HOST_EVERY = 4    -- 房主状态广播间隔
+G.SEAT_STALE = 50   -- 座位上的人多久没动静视为掉线（秒）
+G.TURN_SKIP  = 120  -- 轮到的人多久没动静就自动跳过（秒）
 
-local function EmptyBoard()
-	local b = {}
-	for i = 1, 121 do b[i] = 0 end
-	return b
+function CheckersModule:EmptyBoard()
+	return App.CheckersBoardVo:new()
+end
+
+function CheckersModule:Seat(name, ready, seen)
+	return App.CheckersSeatVo:new(name, ready, seen)
 end
 
 function CheckersModule:init()
 	self.seats    = {}
 	self.watchers = {}
-	self.board    = EmptyBoard()
+	self.board    = self:EmptyBoard()
+	self.model    = self.board
 	self.phase    = "wait"       -- wait / play / over
 	self.turn     = nil
 	self.turnAt   = nil          -- 本回合开始的时间（判超时用，不再看座位心跳）
@@ -226,6 +144,8 @@ function CheckersModule:init()
 	self.wantSeat, self.reclaimN, self.reclaimAt = nil, 0, nil
 	self.lastClaim, self.lastSync = 0, 0
 	self.myReady = false
+	self._seen = {}
+	self._lastSweep = 0
 	self:BuildDriver()
 end
 
@@ -235,11 +155,10 @@ function CheckersModule:BuildDriver()
 	MZ.App:addManager(self)
 end
 
+-- 同步：本机。sync 交棋盘，不发插件消息，也不发全局事件。
 function CheckersModule:Changed()
-	local app = MZ.App
-	local bus = app.eventManager or app.code or app.events
-	local name = (app.Ev and app.Ev.CHECKERS_CHANGED) or "MZ_CHECKERS_CHANGED"
-	if bus then bus:emit(name) end
+	self.model = self.board
+	self:sync("changed")
 end
 
 function CheckersModule:Me()
@@ -305,7 +224,7 @@ end
 function CheckersModule:Spectators()
 	local now, list = GetTime(), {}
 	for name, seen in pairs(self.watchers) do
-		if now - seen <= WATCH_TTL and not self:SeatOf(name) then
+		if now - seen <= G.WATCH_TTL and not self:SeatOf(name) then
 			list[#list + 1] = name
 		end
 	end
@@ -319,7 +238,9 @@ end
 
 -- ------------------------------------------------------------
 -- 4 · 发/收
+-- 同步：明文 H/B/C/Q/W/P/E/R。收包来自 CHAT_MSG_ADDON，不进 EventManager。
 -- ------------------------------------------------------------
+-- 同步：明文进 NetManager 队列。正文不以 ~ 开头。mute 时不发。
 function CheckersModule:Send(text)
 	if self.mute then return false end
 	if not Net then return false end
@@ -339,6 +260,7 @@ function CheckersModule:LinkSuspect()
 	return GetTime() - (self.firstSendAt or GetTime()) > 12
 end
 
+-- 同步：B 包里的棋盘正文。121 格，空位是点，有子是座位号。
 function CheckersModule:EncodeBoard()
 	local t = {}
 	for i = 1, 121 do
@@ -347,8 +269,9 @@ function CheckersModule:EncodeBoard()
 	return table.concat(t)
 end
 
+-- 同步：解开 B 包，整盘替换本机棋盘。
 function CheckersModule:DecodeBoard(str)
-	local b = EmptyBoard()
+	local b = self:EmptyBoard()
 	for i = 1, 121 do
 		local ch = str:sub(i, i)
 		local n = tonumber(ch)
@@ -358,6 +281,7 @@ function CheckersModule:DecodeBoard(str)
 end
 
 --- 房主把当前全量状态打出去（拆两包，避免顶到单包上限）
+--- 同步：房主全量快照。H 座位与阶段，B 棋盘，同一序号。状态一变就发，心跳约每 4 秒再发。
 function CheckersModule:Broadcast()
 	-- 序号必须越过自己见过的最大号：H / B 分开计数，漏收过一包时
 	-- 只比 appliedH 会导致新序号不比别人手里的 appliedB 大，棋盘被当成旧包丢掉
@@ -379,12 +303,16 @@ function CheckersModule:Broadcast()
 	self.lastBroadcast = GetTime()
 end
 
+-- 同步：房主广播 H+B。各端都做本机 Changed。
 function CheckersModule:MarkDirty()
 	if self:IsHost() then self:Broadcast() end
 	self:Changed()
 end
 
+-- 同步：W 观战，P 在座心跳，C 声明，Q 请求，H/B 房主快照，E 拒绝，R 要快照。
+-- Q| 在这里去重：请求不幂等。状态包重复无害，留给后面的序号丢掉。
 function CheckersModule:OnMessage(text, sender)
+	if self:DuplicateRequest(sender, text) then return end
 	self.recvCount  = (self.recvCount or 0) + 1
 	self.lastRecvAt = GetTime()
 	local p = { strsplit("|", text) }
@@ -426,12 +354,40 @@ function CheckersModule:OnMessage(text, sender)
 	end
 end
 
+function CheckersModule:DuplicateRequest(sender, text)
+	if type(text) ~= "string" or text:sub(1, 2) ~= "Q|" then return false end
+	local now = GetTime()
+	local seen = self._seen
+	if now - (self._lastSweep or 0) > 10 then
+		self._lastSweep = now
+		for k, t in pairs(seen) do
+			if now - t > 1.5 then seen[k] = nil end
+		end
+	end
+	local key = tostring(sender) .. "\0" .. text
+	local t = seen[key]
+	if t and now - t <= 1.5 then return true end
+	seen[key] = now
+	return false
+end
+
+-- 同步：带着本机见过的序号向房主要 H+B。没有序号时发 R。
+function CheckersModule:RequestSnapshot()
+	local seq = math.max(self.appliedH or 0, self.appliedB or 0)
+	if seq > 0 then
+		self:Send("R|" .. seq)
+	else
+		self:Send("R")
+	end
+end
+
 function CheckersModule:TouchSeat(name)
 	local seat = self:SeatOf(name)
 	if seat then self.seats[seat].seen = GetTime() end
 end
 
 --- 座位 / 准备 / 离座：抢座式声明，各端就地应用，房主快照兜底纠偏
+--- 同步：C。各端先落地。重复声明无害，快照再纠偏。
 function CheckersModule:OnClaim(p, sender)
 	local what = p[2]
 	if what == "SIT" then
@@ -450,7 +406,7 @@ function CheckersModule:OnClaim(p, sender)
 			return
 		end
 		if self.seats[idx] then return end
-		self.seats[idx] = { name = sender, ready = (p[4] == "1"), seen = GetTime() }
+		self.seats[idx] = self:Seat(sender, p[4] == "1", GetTime())
 		self:Changed()
 	elseif what == "UP" then
 		if self.phase ~= "wait" then return end
@@ -470,6 +426,7 @@ function CheckersModule:OnClaim(p, sender)
 end
 
 --- 房主收到的请求：走子 / 重开
+--- 同步：Q。只在房主裁决。Q| 由通道去重。走子失败回 E。
 function CheckersModule:OnRequest(p, sender)
 	local what = p[2]
 	if what == "MV" then
@@ -489,6 +446,7 @@ function CheckersModule:OnRequest(p, sender)
 	end
 end
 
+-- 同步：H。序号比已应用的旧则丢掉。同序号时名字较小的那份算数。
 function CheckersModule:OnHostState(p, sender)
 	local seq = tonumber(p[2]) or 0
 	self.lastHostAt = GetTime()   -- 只要还收得到房主的快照，就说明链路是通的
@@ -524,11 +482,11 @@ function CheckersModule:OnHostState(p, sender)
 		local nm = names[i]
 		if nm and nm ~= "" then
 			local old = self.seats[i]
-			self.seats[i] = {
-				name  = nm,
-				ready = (mask:sub(i, i) == "1"),
-				seen  = (old and old.name == nm and old.seen) or GetTime(),
-			}
+			self.seats[i] = self:Seat(
+				nm,
+				mask:sub(i, i) == "1",
+				(old and old.name == nm and old.seen) or GetTime()
+			)
 		else
 			self.seats[i] = nil
 		end
@@ -550,6 +508,7 @@ function CheckersModule:BoardEmpty()
 	return true
 end
 
+-- 同步：B。序号未越过则丢掉；对局中棋盘仍是空的时宁可收下。
 function CheckersModule:OnHostBoard(p)
 	local seq = tonumber(p[2]) or 0
 	self.lastHostAt = GetTime()
@@ -566,13 +525,15 @@ end
 
 -- ------------------------------------------------------------
 -- 5 · 动作（本地立即生效，再广播 / 请求）
+-- 同步：点击时机。本机先改，再发 C 或 Q。房主自己的改动随 H+B 广播。
 -- ------------------------------------------------------------
+-- 同步：点击。本机先入座，再发 C|SIT。丢包由心跳补报。
 function CheckersModule:Sit(index)
 	if self.phase ~= "wait" then return false, "对局已开始，等下一局" end
 	if self:MySeat() then return false, "你已经在座上了" end
 	if index < 1 or index > 6 then return false, "座位号无效" end
 	if self.seats[index] then return false, "该座位已被占" end
-	self.seats[index] = { name = self:Me(), ready = false, seen = GetTime() }
+	self.seats[index] = self:Seat(self:Me(), false, GetTime())
 	self.wantSeat, self.reclaimN = index, 0   -- 声明丢了要能自己补回来
 	self.myReady = false
 	self:Send("C|SIT|" .. index)
@@ -587,6 +548,7 @@ function CheckersModule:SitFirstFree()
 	return false, "六个座位都满了"
 end
 
+-- 同步：点击。本机先离座，再发 C|UP。对局中不发。
 function CheckersModule:Leave()
 	local seat = self:MySeat()
 	if not seat then return false, "你还没入座" end
@@ -599,6 +561,7 @@ function CheckersModule:Leave()
 	return true
 end
 
+-- 同步：点击。本机先改准备，再发 C|RDY。意图记在 myReady，避免被快照拉回。
 function CheckersModule:ToggleReady()
 	local seat = self:MySeat()
 	if not seat then return false, "先占一个座位" end
@@ -625,13 +588,14 @@ function CheckersModule:CanStart()
 end
 
 --- 开局：座位 i 的棋子摆在营 i，目标是对面营
+--- 同步：房主本机开局后广播 H+B。人齐时由心跳调用，玩家点击不直接开局。
 function CheckersModule:StartGame()
 	if self.phase ~= "wait" then return false end
-	local board = EmptyBoard()
+	local board = self:EmptyBoard()
 	for seat = 1, 6 do
 		if self.seats[seat] then
 			for i = 1, 121 do
-				if cells[i].arm == seat then board[i] = seat end
+				if G.cells[i].arm == seat then board[i] = seat end
 			end
 		end
 	end
@@ -645,6 +609,7 @@ function CheckersModule:StartGame()
 end
 
 --- 重开：留着座位，回到「等人就绪」；演练模式下直接再来一局
+--- 同步：非房主发 Q|NEW，等房主裁决。房主本机重开后广播 H+B。
 function CheckersModule:Restart()
 	if not self:IsHost() then
 		if not self:Send("Q|NEW") then
@@ -656,7 +621,7 @@ function CheckersModule:Restart()
 		if self.seats[i] then self.seats[i].ready = false end
 	end
 	self.myReady = false          -- 回到大厅就撤销我自己的「已准备」，否则会被自动开局
-	self.board  = EmptyBoard()
+	self.board  = self:EmptyBoard()
 	self.phase  = "wait"
 	self.turn   = nil
 	self.turnAt = nil
@@ -675,6 +640,7 @@ function CheckersModule:Restart()
 end
 
 --- 走子：房主自己下就地判，别人下就发请求
+--- 同步：点击。房主落子后广播。其他人发 Q|MV，不在本地改棋盘。
 function CheckersModule:SubmitMove(path)
 	if not path or #path < 2 then return false, "路径无效" end
 	if self:IsHost() then
@@ -689,6 +655,7 @@ function CheckersModule:SubmitMove(path)
 end
 
 --- 房主端校验并落子
+--- 同步：房主落子后 MarkDirty，由 H+B 带到各端。
 function CheckersModule:ApplyMove(name, path)
 	if self.phase ~= "play" then return false, "还没开局" end
 	local seat = self:SeatOf(name)
@@ -718,6 +685,7 @@ end
 -- ------------------------------------------------------------
 -- 6 · 观战登记（插件面板开 = 观战，关 = 撤销）
 -- ------------------------------------------------------------
+-- 同步：面板开启发 W|1，关闭发 W|0。心跳每 8 秒补报 W|1。
 function CheckersModule:SetWatching(on)
 	on = on and true or false
 	if self.watching == on then return end
@@ -734,25 +702,14 @@ end
 
 -- ------------------------------------------------------------
 -- 7 · 心跳 / 房主轮询
+-- 同步：先攒满 1 秒。补报入座、W/P 为 8 秒，房主 H+B 为 4 秒，非房主 R 约 2 秒。
+-- 观战由界面在主窗口显示和隐藏时调用 SetWatching。
 -- ------------------------------------------------------------
-local hooked = false
-
-local function HookPanel(game)
-	if hooked then return end
-	local f = MZ.App.UI and MZ.App.UI.frame
-	if not f then return end
-	hooked = true
-	MZ.App.Hook:Attach(f, "OnShow", function() game:SetWatching(true) end)
-	MZ.App.Hook:Attach(f, "OnHide", function() game:SetWatching(false) end)
-	if f:IsShown() then game:SetWatching(true) end
-end
-
+-- 同步：心跳时机。不在这一拍里按帧同步状态，只按上面的间隔补报、要快照、广播。
 function CheckersModule:update(elapsed)
 	self.acc = (self.acc or 0) + (elapsed or 0)
 	if self.acc < 1 then return end
 	self.acc = 0
-
-	if not hooked then HookPanel(self) end
 
 	local now = GetTime()
 
@@ -777,12 +734,12 @@ function CheckersModule:update(elapsed)
 	-- 面板开着就持续登记；坐着的人即使关面板也报活，免得被当成掉线
 	if self.watching then
 		self.watchers[self:Me()] = now
-		if now - (self.lastWatch or 0) >= PING_EVERY then
+		if now - (self.lastWatch or 0) >= G.PING_EVERY then
 			self.lastWatch = now
 			self:Send("W|1")
 		end
 	elseif mySeat then
-		if now - (self.lastPing or 0) >= PING_EVERY then
+		if now - (self.lastPing or 0) >= G.PING_EVERY then
 			self.lastPing = now
 			self:Send("P")
 		end
@@ -790,7 +747,7 @@ function CheckersModule:update(elapsed)
 
 	-- 座位和准备都是「说一次就算」的：那一条包丢了，房主那边就永远看不到我
 	-- 坐下了 / 已就绪，全桌卡在等人阶段。跟着心跳幂等补报一次。
-	if mySeat and self.phase == "wait" and now - (self.lastClaim or 0) >= PING_EVERY then
+	if mySeat and self.phase == "wait" and now - (self.lastClaim or 0) >= G.PING_EVERY then
 		self.lastClaim = now
 		-- 报的是自己的「意图」而不是快照里那个值：房主没见过我准备就会一直发
 		-- 「未准备」，我照着它回话就变成了互相把对方拉回未准备，全桌永远开不了局。
@@ -807,14 +764,14 @@ function CheckersModule:update(elapsed)
 			or (self.phase == "wait" and self:CanStart())
 		if needSync then
 			self.lastSync = now
-			self:Send("R|" .. math.max(self.appliedH or 0, self.appliedB or 0))
+			self:RequestSnapshot()
 		end
 	end
 
 	-- 清理沉默的观战者
 	local dirty = false
 	for name, seen in pairs(self.watchers) do
-		if name ~= self:Me() and now - seen > WATCH_TTL then
+		if name ~= self:Me() and now - seen > G.WATCH_TTL then
 			self.watchers[name] = nil
 			dirty = true
 		end
@@ -842,7 +799,7 @@ function CheckersModule:update(elapsed)
 		if self.phase == "wait" then
 			for i = 1, 6 do
 				local s = self.seats[i]
-				if s and now - (s.seen or now) > SEAT_STALE then
+				if s and now - (s.seen or now) > G.SEAT_STALE then
 					self.seats[i] = nil
 					self:Changed()
 				end
@@ -853,19 +810,20 @@ function CheckersModule:update(elapsed)
 			-- 这一回合卡太久（掉线 / 挂机）就跳过，免得全桌干等。
 			-- 用 turnAt 而不是座位心跳：房主自己的座位每帧都被刷新，
 			-- 用心跳判的话房主挂机永远不会被跳过，全桌反而卡死。
-			if now - (self.turnAt or now) > TURN_SKIP then
+			if now - (self.turnAt or now) > G.TURN_SKIP then
 				self.turn   = self:NextTurn(self.turn)
 				self.turnAt = now
 				self:Broadcast()
 			end
 		end
-		if now - (self.lastBroadcast or 0) >= HOST_EVERY then self:Broadcast() end
+		if now - (self.lastBroadcast or 0) >= G.HOST_EVERY then self:Broadcast() end
 	end
 end
 
 -- ------------------------------------------------------------
 -- 8 · 本机演练（没有队友时也能看棋盘；不外发任何包）
 -- ------------------------------------------------------------
+-- 同步：mute 期间 Send 直接丢掉。退出演练会发 R，向房主要一次快照。
 function CheckersModule:Demo()
 	if self.mute then
 		-- 再点一次 = 退出演练。mute 必须清掉，否则之后一直发不出包、
@@ -873,21 +831,21 @@ function CheckersModule:Demo()
 		self:init()
 		local f = MZ.App.UI and MZ.App.UI.frame
 		if f and f:IsShown() then self:SetWatching(true) end
-		self:Send("R")
+		self:RequestSnapshot()
 		self:Changed()
 		return false
 	end
 	self.mute = true
 	for i = 1, 6 do self.seats[i] = nil end
 	for i = 1, 6 do
-		self.seats[i] = {
-			name  = (i == 1) and self:Me() or ("棋友" .. G.SEAT_NAMES[i]),
-			ready = true,
-			seen  = GetTime(),
-		}
+		self.seats[i] = self:Seat(
+			(i == 1) and self:Me() or ("棋友" .. G.SEAT_NAMES[i]),
+			true,
+			GetTime()
+		)
 	end
 	self.phase  = "wait"
-	self.board  = EmptyBoard()
+	self.board  = self:EmptyBoard()
 	self:StartGame()
 	self:Changed()
 end

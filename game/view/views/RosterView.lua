@@ -94,7 +94,7 @@ function RosterView:onBuild(page)
 
 	App.Hook:Bind(refresh, "OnClick", Refresh)
 
-	App.eventManager:On("GROUP_ROSTER_UPDATE", function()
+	App.system:On(App.NetEvents.GROUP_ROSTER_UPDATE, function()
 		if page:IsShown() then Refresh() end
 	end)
 

@@ -32,6 +32,11 @@ end
 function AbstractModule:init()
 end
 
+-- 模块内数据同步。model 是当前数据体，why 说明这次为什么变。
+function AbstractModule:sync(why)
+	self:emit("sync", self.model, why)
+end
+
 function AbstractModule:show()
 end
 

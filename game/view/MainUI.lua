@@ -145,7 +145,7 @@ function MainUI:ShowPage(id)
 	self.activePage = def.id
 	Core.Store:Set("lastPage", def.id)
 	self:UpdateTabs()
-	App.eventManager:emit(App.Ev.PAGE_CHANGED, def.id)
+	App.eventManager:emit(App.GlobalEvents.PAGE_CHANGED, def.id)
 end
 
 function MainUI:SetScale(value)

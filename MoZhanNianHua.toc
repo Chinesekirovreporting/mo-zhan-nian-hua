@@ -13,8 +13,15 @@
 # --- 插件表。后面的文件都往 MZ.App 上挂 ---
 core\Init.lua
 
-# --- Lua 语法。不出现暴雪接口 ---
-framework\Class.lua
+# --- 类工厂。不出现暴雪接口 ---
+core\utils\Class.lua
+
+# --- 同步枚举。状态先于频道、方案、时机、约束 ---
+core\enum\SyncState.lua
+core\enum\SyncChannel.lua
+core\enum\SyncScheme.lua
+core\enum\SyncTiming.lua
+core\enum\SyncLimit.lua
 
 # --- 插件规范。每个管理器一个文件夹，对外只暴露 *Manager ---
 core\manager\EventManager\EventEmitter.lua
@@ -23,21 +30,33 @@ core\manager\Manager.lua
 core\abstract\AbstractModule.lua
 core\abstract\AbstractView.lua
 core\Hook.lua
-core\manager\EventManager\Names.lua
-core\manager\EventManager\SystemEvent.lua
+core\manager\SystemEvent\SystemEvent.lua
+core\manager\SystemEvent\NetEvents.lua
+core\manager\EventManager\GlobalEvents.lua
 core\manager\EventManager\CodeEvent.lua
 core\manager\EventManager\EventManager.lua
+core\manager\NetManager\NetCodec.lua
 core\manager\NetManager\NetManager.lua
 core\manager\LogManager\LogManager.lua
 core\manager\StoreManager\StoreManager.lua
 core\manager\TimerManager\TimerManager.lua
 
-# --- 玩法：事件名、模块、门面，然后总门面 ---
-game\Names.lua
-game\module\CheckersModule.lua
-game\module\DkpModule.lua
-game\module\TimerModule.lua
-game\module\RosterModule.lua
+# --- 玩法：数据体、模块、门面，然后总门面 ---
+game\model\vo\CheckersOffsetVo.lua
+game\model\vo\CheckersCellVo.lua
+game\model\vo\CheckersJumpVo.lua
+game\model\vo\CheckersSeatVo.lua
+game\model\vo\CheckersBoardVo.lua
+game\model\vo\DkpMemberVo.lua
+game\model\vo\DkpLogVo.lua
+game\model\vo\DkpRosterVo.lua
+game\model\vo\TimerVo.lua
+game\model\vo\RosterUnitVo.lua
+game\module\CheckersModule\CheckersBoard.lua
+game\module\CheckersModule\CheckersModule.lua
+game\module\DkpModule\DkpModule.lua
+game\module\TimerModule\TimerModule.lua
+game\module\RosterModule\RosterModule.lua
 game\GameModules.lua
 core\App.lua
 

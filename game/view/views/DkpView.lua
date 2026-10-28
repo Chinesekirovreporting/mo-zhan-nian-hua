@@ -330,29 +330,7 @@ function DkpView:onBuild(page, body)
 		end
 
 		Render = function()
-			-- 过滤 + 排序
-			local shown = {}
-			for _, m in ipairs(members) do
-				if searching == "" or string.find(string.lower(m.name), searching, 1, true) then
-					shown[#shown + 1] = m
-				end
-			end
-
-			if sortBy == "name" then
-				table.sort(shown, function(a, b) return a.name < b.name end)
-			elseif sortBy == "pr" then
-				table.sort(shown, function(a, b)
-					local pa, pb = Dkp:PR(a.name), Dkp:PR(b.name)
-					if pa == pb then return a.name < b.name end
-					return pa > pb
-				end)
-			else
-				table.sort(shown, function(a, b)
-					local na, nb = Dkp:Net(a.name), Dkp:Net(b.name)
-					if na == nb then return a.name < b.name end
-					return na > nb
-				end)
-			end
+			local shown, total = Dkp:Arrange(members, sortBy, searching)
 
 			for i = 1, #shown do
 				local m = shown[i]
@@ -413,9 +391,6 @@ function DkpView:onBuild(page, body)
 				empty:Hide()
 			end
 
-			-- 顶部统计
-			local total = 0
-			for _, m in ipairs(members) do total = total + Dkp:Net(m.name) end
 			local guildName = GetGuildInfo and (GetGuildInfo("player"))
 			if type(guildName) == "string" and guildName ~= "" then
 				statText:SetText(string.format("%s · %d 人 · 合计 %d 分", guildName, #shown, total))
@@ -475,22 +450,7 @@ function DkpView:onBuild(page, body)
 		end
 
 		local function Refresh(doRequest)
-			members = Dkp:ScanGuild()
-
-			-- 本地有分但名册没有的（已离会 / 手动记过）也列出来
-			local seen = {}
-			for _, m in ipairs(members) do seen[m.name] = true end
-			for name in pairs(Dkp:Members()) do
-				if not seen[name] then
-					members[#members + 1] = {
-						name    = name,
-						level   = 0,
-						inGuild = false,
-						online  = false,
-					}
-				end
-			end
-
+			members = Dkp:Roster()
 			Render()
 			if doRequest then RequestRoster() end
 		end
@@ -576,19 +536,17 @@ function DkpView:onBuild(page, body)
 				return
 			end
 
-			local ep, gp = Dkp:Peek(selected)
-			SendChatMessage(string.format("[DKP] %s 现有 %d 分（EP %d / GP %d）",
-				selected, ep - gp, ep, gp), "GUILD")
+			SendChatMessage(Dkp:PostLine(selected), "GUILD")
 		end)
 
 		-- ==================== 事件 ====================
-		App.eventManager:On("GUILD_ROSTER_UPDATE", function()
+		App.system:On(App.NetEvents.GUILD_ROSTER_UPDATE, function()
 			if page:IsShown() then Refresh(false) end
 		end)
-		App.eventManager:On("PLAYER_ENTERING_WORLD", function()
+		App.system:On(App.NetEvents.PLAYER_ENTERING_WORLD, function()
 			if page:IsShown() then Refresh(false) end
 		end)
-		App.eventManager:on(App.Ev.PAGE_CHANGED, function(id)
+		App.eventManager:on(App.GlobalEvents.PAGE_CHANGED, function(id)
 			if id ~= "dkp" then return end
 			Refresh(true)
 		end)

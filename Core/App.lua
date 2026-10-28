@@ -1,7 +1,10 @@
 -- ============================================================
 -- App · 门面
 -- 单例在各文件加载时创建。这里挂到门面上，startApp 再初始化存档。
---   App.eventManager   事件（On 暴雪 / on·emit 代码）
+--   App.eventManager   代码内全局事件（on·emit）
+--   App.GlobalEvents   模块事件名字符串集
+--   App.system         暴雪事件（On·Once·Off）
+--   App.NetEvents      收集到的暴雪事件字符串集
 --   App.Core           日志、存档、计时、网络、事件
 --   App.GameModules    跳棋、DKP、倒计时、名单
 -- ============================================================
@@ -11,17 +14,14 @@ local App = MZ.App
 assert(App and App._modules, "App: core/Init 未就绪")
 
 local M = App._modules
-assert(M.Log and M.Store and M.Event and M.Time and M.Net, "App: 核心模块未就绪")
+assert(M.Log and M.Store and M.Event and M.System and M.Time and M.Net, "App: 核心模块未就绪")
 assert(App.GameModules and App.GameModules.Checkers and App.GameModules.Dkp
 	and App.GameModules.Timer and App.GameModules.Roster, "App: GameModules 未就绪")
 
 App.logManager   = M.Log
 App.storeManager = M.Store
 App.eventManager = M.Event
--- 内部件。新代码走 eventManager。
-App.system       = M.Event.system
-App.code         = M.Event.code
-App.events       = M.Event.code
+App.system       = M.System
 
 App.Core = {
 	Log      = M.Log,
@@ -29,6 +29,7 @@ App.Core = {
 	Time     = M.Time,
 	Net      = M.Net,
 	Event    = M.Event,
+	System   = M.System,
 }
 
 App.UI = App.UI or nil
@@ -50,7 +51,7 @@ function App:Init()
 end
 
 function App:Ready()
-	self.eventManager:emit(self.Ev.READY)
+	self.eventManager:emit(self.GlobalEvents.READY)
 	self.logManager:Debug("App 就绪")
 	return self
 end

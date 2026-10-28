@@ -1,0 +1,91 @@
+---
+description: 插件同步的范围、方案、时机和约束
+globs: core/enum/**/*.lua,core/manager/NetManager/**/*.lua,game/module/**/*.lua,game/view/**/*.lua
+alwaysApply: false
+---
+
+# 同步
+
+三条线分开走。名字在 `App.SyncState`、`App.SyncChannel`、`App.SyncScheme`、`App.SyncTiming`、`App.SyncLimit`，选用看下面的线，不按枚举字段再写一套。
+
+```mermaid
+flowchart LR
+  ModuleSync["Module:sync"] --> View
+  Click["点击或心跳"] --> Host["房主裁决"]
+  Host --> Plain["明文 H/B/C/Q/W/P/E/R"]
+  Plain --> NetSend["Net:Send"]
+  Blizzard["暴雪名册接口"] --> ModulePull["List 或 ScanGuild"]
+  ModulePull --> View
+```
+
+## 本机线
+
+`AbstractModule:sync(why)` 把 `self.model` 交给界面，不调用 `Send`。`App.eventManager` 同样不发插件消息。
+
+## 房主线
+
+只有跳棋。频道由 `NetManager:Channels` 决定：有团队用 `RAID`，否则 `PARTY`，都没有才 `INSTANCE_CHAT`，在公会时再追加 `GUILD`。前缀 `MZCHK`。广播，不是点对点。
+
+非房主发 `Q`，本机不改棋盘。房主 `ApplyMove` 之后广播整份 `H`（座位、阶段）和 `B`（棋盘）。座位 `C` 各端先落地，快照再纠偏。字母不改成 `~S`。
+
+插件消息会丢、会重复、会乱序。旧序号丢掉。只有 `Q|` 去重，状态包重复无害。`Send` 的正文不以 `~` 开头。收包不进 `EventManager`。自己发出的包直接丢掉。
+
+时机：点击（入座、准备、走子、开局）才发包。逻辑先攒到 1 秒。观战 `W`、在座 `P`、补报入座间隔 8 秒。房主全量广播间隔 4 秒。非房主约每 2 秒发 `R` 或 `R|序号`。帧回调只抽发送队列（间隔 0.12 秒，队列上限 60），不按帧同步。
+
+锁步不采用。没有共同帧时钟，少一个人的包不能停住全桌。
+
+## 拉取线
+
+`RosterModule:List` 读当前队伍，`DkpModule:ScanGuild` 读公会名册。`GROUP_ROSTER_UPDATE` 和 `GUILD_ROSTER_UPDATE` 只触发本机再拉一次。积分留在 `MoZhanNianHuaDB`，不做无主合并。
+
+## 不要混进来的线
+
+倒计时的 `SendChatMessage` 是可见公告，频道 `RAID` / `PARTY` / `SAY`。`MoZhanNianHuaDB` 是存档。`~S` / `~D` / `~T` 是通道备用，玩法不调用。
+
+## 实例
+
+正例：非房主只发请求。房主落子后由 `MarkDirty` 广播整份 `H` 和 `B`。
+
+```lua
+function CheckersModule:SubmitMove(path)
+	if self:IsHost() then
+		return self:ApplyMove(self:Me(), path)
+	end
+	self:Send("Q|MV|" .. table.concat(path, ";"))
+	return true
+end
+```
+
+正例：拉完名册，只走本机 `sync`。
+
+```lua
+function RosterModule:List()
+	self.units = {}
+	-- 团队读 raid，小队读 player 和 party，否则只读 player
+	self.model = self.units
+	self:sync("list")
+	return self.units
+end
+```
+
+反例：界面发出封包字母。要快照写成模块方法，由模块 `Send("R")`。
+
+```lua
+App.Hook:Attach(page, "OnShow", function()
+	G:Send("R")
+end)
+```
+
+反例：代码事件的监听里发插件消息。
+
+```lua
+App.eventManager:on(App.GlobalEvents.CHECKERS_CHANGED, function()
+	App.Core.Net:Send("B|1|...")
+end)
+```
+
+反例：跳棋快照改走结构化包。棋盘仍是明文 `H` 加 `B`。
+
+```lua
+App.Core.Net:SendSnapshot("board", board)
+```

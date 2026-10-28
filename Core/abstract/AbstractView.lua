@@ -65,7 +65,7 @@ function AbstractView:onHide()
 end
 
 function AbstractView:dispose()
-	if App.code then App.eventManager:targetOff(self) end
+	App.eventManager:targetOff(self)
 	self:exitModule()
 	self.page = nil
 	self.body = nil

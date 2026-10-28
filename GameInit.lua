@@ -25,11 +25,11 @@ end
 
 local function OnAddonLoaded(_, name)
 	if name ~= ADDON_NAME then return end
-	App.eventManager:Off("ADDON_LOADED", OnAddonLoaded)
+	App.system:Off(App.NetEvents.ADDON_LOADED, OnAddonLoaded)
 	Start()
 end
 
-App.eventManager:On("ADDON_LOADED", OnAddonLoaded)
+App.system:On(App.NetEvents.ADDON_LOADED, OnAddonLoaded)
 
 App.GameInit = {
 	Compose = Compose,
