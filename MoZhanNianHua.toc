@@ -5,7 +5,7 @@
 ## Notes: 水墨风公会活动面板，提供可扩展的页面框架。
 ## Notes-zhCN: 水墨风公会活动面板。\n左侧竖栏切换页面，右侧内容区留给具体功能填充。
 ## Author: MoZhan
-## Version: 0.4.2
+## Version: 0.5.1
 ## SavedVariables: MoZhanNianHuaDB
 ## X-Category: Guild
 ## X-Website: 
@@ -52,11 +52,18 @@ game\model\vo\DkpLogVo.lua
 game\model\vo\DkpRosterVo.lua
 game\model\vo\TimerVo.lua
 game\model\vo\RosterUnitVo.lua
+game\model\vo\AssessSampleVo.lua
+game\model\vo\AssessRecordVo.lua
+game\model\vo\WisdomTreeVo.lua
+game\model\vo\WisdomCareVo.lua
+game\model\vo\WisdomTouchVo.lua
 game\module\CheckersModule\CheckersBoard.lua
 game\module\CheckersModule\CheckersModule.lua
 game\module\DkpModule\DkpModule.lua
 game\module\TimerModule\TimerModule.lua
 game\module\RosterModule\RosterModule.lua
+game\module\AssessModule\AssessModule.lua
+game\module\WisdomModule\WisdomModule.lua
 game\GameModules.lua
 core\App.lua
 
@@ -67,6 +74,8 @@ game\skin\CheckersView.xml
 game\skin\DkpView.xml
 game\skin\TimerView.xml
 game\skin\RosterView.xml
+game\skin\AssessView.xml
+game\skin\WisdomView.xml
 game\skin\SettingsView.xml
 
 game\view\Widget.lua
@@ -76,6 +85,8 @@ game\view\views\CheckersView.lua
 game\view\views\DkpView.lua
 game\view\views\TimerView.lua
 game\view\views\RosterView.lua
+game\view\views\AssessView.lua
+game\view\views\WisdomView.lua
 game\view\views\SettingsView.lua
 
 # --- 命令，然后组合根 ---

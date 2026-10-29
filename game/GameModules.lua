@@ -2,21 +2,25 @@
 -- GameModules · 逻辑侧门面
 -- 界面和命令只从这里拿模块，不直接碰 game/module 里的单例。
 --   Checkers  六角跳棋。房主权威 + 全量快照，明文 H/B/C/Q/W/P/E/R
+--   Wisdom    智慧树。公会园丁记账，明文 Z，只走公会频道
 --   Dkp       公会积分。名册向服务器拉，分数留在本机存档
 --   Timer     开怪倒计时。可见公告，不同步状态
 --   Roster    参战名单。向服务器拉当前队伍
+--   Assess    木桩考核。本机记秒伤，平均和最高留在存档
 -- ============================================================
 local ADDON_NAME, MZ = ...
 local App = MZ.App
 
 local M = App._modules
-assert(M.Checkers and M.Dkp and M.Timer and M.Roster, "GameModules: 逻辑模块未就绪")
+assert(M.Checkers and M.Wisdom and M.Dkp and M.Timer and M.Roster and M.Assess, "GameModules: 逻辑模块未就绪")
 
 local GameModules = {
 	Checkers = M.Checkers,
+	Wisdom   = M.Wisdom,
 	Dkp      = M.Dkp,
 	Timer    = M.Timer,
 	Roster   = M.Roster,
+	Assess   = M.Assess,
 }
 
 function GameModules:Get(name)

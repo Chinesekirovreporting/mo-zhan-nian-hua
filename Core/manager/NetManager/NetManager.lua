@@ -112,6 +112,13 @@ function NetManager:Send(text)
 	return self:SendFramed(text)
 end
 
+--- 只发到一个频道。智慧树用公会，不进队伍频道。
+function NetManager:SendTo(channel, text)
+	if type(channel) ~= "string" or channel == "" then return false end
+	if type(text) ~= "string" or text == "" or text:sub(1, 1) == "~" then return false end
+	return self:SendFramed(text, channel)
+end
+
 --- 点对点插件消息，对方看不到聊天文字。
 function NetManager:SendWhisper(name, text)
 	if type(name) ~= "string" or name == "" then return false end
@@ -159,13 +166,13 @@ function NetManager:Commit(topic, value, onDone)
 	return true, tx
 end
 
-function NetManager:SendFramed(body)
+function NetManager:SendFramed(body, channel)
 	if type(body) ~= "string" or body == "" or #body > self.MAX_BODY then return false end
-	if #body <= self.MAXLEN then return self:Enqueue(body) end
-	return self:EnqueueParts(body)
+	if #body <= self.MAXLEN then return self:Enqueue(body, channel) end
+	return self:EnqueueParts(body, channel)
 end
 
-function NetManager:EnqueueParts(body)
+function NetManager:EnqueueParts(body, channel)
 	local chunk = self.CHUNK
 	local n = math.ceil(#body / chunk)
 	if n < 2 or n > self.MAX_PARTS then return false end
@@ -180,12 +187,16 @@ function NetManager:EnqueueParts(body)
 		if #pieces[i] > self.MAXLEN then return false end
 		i = i + 1
 	end
-	local chans = self:Channels()
+	local chans = channel and { channel } or self:Channels()
 	if #chans == 0 then return false end
 	if #self._queue + n * #chans > self.MAX_QUEUE then return false end
 	i = 1
 	while i <= n do
-		if not self:Enqueue(pieces[i]) then return false end
+		if channel then
+			if not self:Enqueue(pieces[i], channel) then return false end
+		elseif not self:Enqueue(pieces[i]) then
+			return false
+		end
 		i = i + 1
 	end
 	return true

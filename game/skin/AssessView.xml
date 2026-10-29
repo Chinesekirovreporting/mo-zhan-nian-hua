@@ -1,0 +1,4 @@
+<Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/..\FrameXML\UI.xsd">
+	<!-- 子窗口：木桩考核。排行和过滤随数据生成，见 game/view/views/AssessView.lua。 -->
+	<Frame name="MZPageAssess" parent="MZMainContent" inherits="MZPageTemplate" hidden="true"/>
+</Ui>

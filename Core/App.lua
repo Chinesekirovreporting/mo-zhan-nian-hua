@@ -6,7 +6,7 @@
 --   App.system         暴雪事件（On·Once·Off）
 --   App.NetEvents      收集到的暴雪事件字符串集
 --   App.Core           日志、存档、计时、网络、事件
---   App.GameModules    跳棋、DKP、倒计时、名单
+--   App.GameModules    跳棋、智慧树、DKP、倒计时、名单、考核
 -- ============================================================
 local ADDON_NAME, MZ = ...
 
@@ -15,8 +15,9 @@ assert(App and App._modules, "App: core/Init 未就绪")
 
 local M = App._modules
 assert(M.Log and M.Store and M.Event and M.System and M.Time and M.Net, "App: 核心模块未就绪")
-assert(App.GameModules and App.GameModules.Checkers and App.GameModules.Dkp
-	and App.GameModules.Timer and App.GameModules.Roster, "App: GameModules 未就绪")
+assert(App.GameModules and App.GameModules.Checkers and App.GameModules.Wisdom
+	and App.GameModules.Dkp and App.GameModules.Timer and App.GameModules.Roster
+	and App.GameModules.Assess, "App: GameModules 未就绪")
 
 App.logManager   = M.Log
 App.storeManager = M.Store

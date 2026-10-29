@@ -1,0 +1,135 @@
+<Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/..\FrameXML\UI.xsd">
+	<!-- 子窗口：智慧树。树形和点击在 game/view/views/WisdomView.lua。 -->
+	<Frame name="MZPageWisdom" parent="MZMainContent" inherits="MZPageTemplate" hidden="true"/>
+
+	<Frame name="MZWisdomChrome" parent="MZPageWisdom">
+		<Anchors>
+			<Anchor point="TOPLEFT" relativeTo="MZPageWisdomBody"/>
+			<Anchor point="BOTTOMRIGHT" relativeTo="MZPageWisdomBody"/>
+		</Anchors>
+		<Layers>
+			<Layer level="ARTWORK">
+				<Texture name="MZWisdomSplit" file="Interface\ChatFrame\ChatFrameBackground">
+					<Size y="1"/>
+					<Anchors>
+						<Anchor point="TOPLEFT" y="-206"/>
+						<Anchor point="TOPRIGHT" y="-206"/>
+					</Anchors>
+					<Color r="0.106" g="0.098" b="0.086" a="0.35"/>
+				</Texture>
+			</Layer>
+			<Layer level="OVERLAY">
+				<FontString name="MZWisdomStage" inherits="GameFontNormal" justifyH="LEFT" justifyV="MIDDLE" text="种子">
+					<Size x="270" y="24"/>
+					<Anchors>
+						<Anchor point="TOPLEFT" x="180" y="0"/>
+					</Anchors>
+					<Color r="0.106" g="0.098" b="0.086"/>
+				</FontString>
+				<FontString name="MZWisdomHeight" inherits="GameFontHighlight" justifyH="LEFT" justifyV="MIDDLE" text="">
+					<Size x="270" y="18"/>
+					<Anchors>
+						<Anchor point="TOPLEFT" x="180" y="-26"/>
+					</Anchors>
+					<Color r="0.106" g="0.098" b="0.086"/>
+				</FontString>
+				<FontString name="MZWisdomNutrient" inherits="GameFontHighlight" justifyH="LEFT" justifyV="MIDDLE" text="">
+					<Size x="270" y="18"/>
+					<Anchors>
+						<Anchor point="TOPLEFT" x="180" y="-46"/>
+					</Anchors>
+					<Color r="0.278" g="0.259" b="0.227"/>
+				</FontString>
+				<FontString name="MZWisdomIdle" inherits="GameFontHighlight" justifyH="LEFT" justifyV="MIDDLE" text="">
+					<Size x="270" y="18"/>
+					<Anchors>
+						<Anchor point="TOPLEFT" x="180" y="-66"/>
+					</Anchors>
+					<Color r="0.435" g="0.408" b="0.361"/>
+				</FontString>
+				<FontString name="MZWisdomFruit" inherits="GameFontHighlight" justifyH="LEFT" justifyV="MIDDLE" text="">
+					<Size x="270" y="18"/>
+					<Anchors>
+						<Anchor point="TOPLEFT" x="180" y="-86"/>
+					</Anchors>
+					<Color r="0.106" g="0.098" b="0.086"/>
+				</FontString>
+				<FontString name="MZWisdomQuote" inherits="GameFontHighlight" justifyH="LEFT" justifyV="TOP" text="">
+					<Size x="270" y="32"/>
+					<Anchors>
+						<Anchor point="TOPLEFT" x="180" y="-108"/>
+					</Anchors>
+					<Color r="0.435" g="0.408" b="0.361"/>
+				</FontString>
+				<FontString name="MZWisdomCd" inherits="GameFontHighlight" justifyH="LEFT" justifyV="MIDDLE" text="">
+					<Size x="270" y="16"/>
+					<Anchors>
+						<Anchor point="TOPLEFT" x="180" y="-142"/>
+					</Anchors>
+					<Color r="0.278" g="0.259" b="0.227"/>
+				</FontString>
+				<FontString name="MZWisdomBanner" inherits="GameFontHighlight" justifyH="LEFT" justifyV="MIDDLE" text="">
+					<Size x="270" y="16"/>
+					<Anchors>
+						<Anchor point="TOPLEFT" x="180" y="-188"/>
+					</Anchors>
+					<Color r="0.435" g="0.408" b="0.361"/>
+				</FontString>
+				<FontString name="MZWisdomRankTitle" inherits="GameFontHighlight" justifyH="LEFT" text="养护">
+					<Size x="200" y="16"/>
+					<Anchors>
+						<Anchor point="TOPLEFT" x="0" y="-214"/>
+					</Anchors>
+					<Color r="0.106" g="0.098" b="0.086"/>
+				</FontString>
+				<FontString name="MZWisdomRank" inherits="GameFontHighlight" justifyH="LEFT" justifyV="TOP" text="">
+					<Size x="210" y="78"/>
+					<Anchors>
+						<Anchor point="TOPLEFT" x="0" y="-232"/>
+					</Anchors>
+					<Color r="0.278" g="0.259" b="0.227"/>
+				</FontString>
+				<FontString name="MZWisdomLogTitle" inherits="GameFontHighlight" justifyH="LEFT" text="年轮">
+					<Size x="200" y="16"/>
+					<Anchors>
+						<Anchor point="TOPLEFT" x="230" y="-214"/>
+					</Anchors>
+					<Color r="0.106" g="0.098" b="0.086"/>
+				</FontString>
+				<FontString name="MZWisdomLog" inherits="GameFontHighlight" justifyH="LEFT" justifyV="TOP" text="">
+					<Size x="210" y="78"/>
+					<Anchors>
+						<Anchor point="TOPLEFT" x="230" y="-232"/>
+					</Anchors>
+					<Color r="0.278" g="0.259" b="0.227"/>
+				</FontString>
+			</Layer>
+		</Layers>
+		<Frames>
+			<Frame name="MZWisdomPlot">
+				<Size x="168" y="198"/>
+				<Anchors>
+					<Anchor point="TOPLEFT"/>
+				</Anchors>
+			</Frame>
+			<Button name="MZWisdomWater" inherits="MZButtonTemplate" text="浇水">
+				<Size x="72" y="26"/>
+				<Anchors>
+					<Anchor point="TOPLEFT" x="180" y="-160"/>
+				</Anchors>
+			</Button>
+			<Button name="MZWisdomFert" inherits="MZButtonTemplate" text="施肥">
+				<Size x="72" y="26"/>
+				<Anchors>
+					<Anchor point="LEFT" relativeTo="MZWisdomWater" relativePoint="RIGHT" x="8" y="0"/>
+				</Anchors>
+			</Button>
+			<Button name="MZWisdomPick" inherits="MZButtonTemplate" text="采摘">
+				<Size x="72" y="26"/>
+				<Anchors>
+					<Anchor point="LEFT" relativeTo="MZWisdomFert" relativePoint="RIGHT" x="8" y="0"/>
+				</Anchors>
+			</Button>
+		</Frames>
+	</Frame>
+</Ui>

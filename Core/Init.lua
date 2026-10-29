@@ -9,7 +9,7 @@ local App = {}
 MZ.App = App
 
 App.ADDON   = ADDON_NAME
-App.VERSION = "0.4.2"
+App.VERSION = "0.5.1"
 
 -- 各模块加载时把自己的单例放进来，App.lua 再挂到门面上
 App._modules = {}
