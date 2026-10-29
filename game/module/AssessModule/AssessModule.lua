@@ -293,19 +293,20 @@ function AssessModule:ReadHit(...)
 	if not hit then return nil end
 	local base = hit.base
 
+	-- select 会把该位之后的参数一并交出去，tonumber 会把第二参当成进制。
 	local amount, overkill, absorbed
 	if swing then
 		hit.spellId = nil
 		hit.spellName = nil
-		amount = tonumber(select(base, ...)) or 0
-		overkill = tonumber(select(base + 1, ...)) or 0
-		absorbed = tonumber(select(base + 5, ...)) or 0
+		amount = tonumber((select(base, ...))) or 0
+		overkill = tonumber((select(base + 1, ...))) or 0
+		absorbed = tonumber((select(base + 5, ...))) or 0
 	else
 		hit.spellId = select(base, ...)
 		hit.spellName = select(base + 1, ...)
-		amount = tonumber(select(base + 3, ...)) or 0
-		overkill = tonumber(select(base + 4, ...)) or 0
-		absorbed = tonumber(select(base + 8, ...)) or 0
+		amount = tonumber((select(base + 3, ...))) or 0
+		overkill = tonumber((select(base + 4, ...))) or 0
+		absorbed = tonumber((select(base + 8, ...))) or 0
 	end
 	if overkill < 0 then overkill = 0 end
 	if absorbed < 0 then absorbed = 0 end
