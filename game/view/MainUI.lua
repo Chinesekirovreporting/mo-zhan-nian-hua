@@ -12,6 +12,7 @@ local C = App.C
 local TABS = {
 	{ name = "MZTabActivity", id = "activity" },
 	{ name = "MZTabCheckers", id = "checkers" },
+	{ name = "MZTabTactics",  id = "tactics" },
 	{ name = "MZTabWisdom",   id = "wisdom" },
 	{ name = "MZTabDkp",      id = "dkp" },
 	{ name = "MZTabTimer",    id = "timer" },

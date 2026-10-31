@@ -57,8 +57,10 @@ game\model\vo\AssessRecordVo.lua
 game\model\vo\WisdomTreeVo.lua
 game\model\vo\WisdomCareVo.lua
 game\model\vo\WisdomTouchVo.lua
+game\model\vo\TacticsStrokeVo.lua
 game\module\CheckersModule\CheckersBoard.lua
 game\module\CheckersModule\CheckersModule.lua
+game\module\TacticsModule\TacticsModule.lua
 game\module\DkpModule\DkpModule.lua
 game\module\TimerModule\TimerModule.lua
 game\module\RosterModule\RosterModule.lua
@@ -77,6 +79,7 @@ game\skin\RosterView.xml
 game\skin\AssessView.xml
 game\skin\WisdomView.xml
 game\skin\SettingsView.xml
+game\skin\TacticsView.xml
 
 game\view\Widget.lua
 game\view\MainUI.lua
@@ -88,6 +91,7 @@ game\view\views\RosterView.lua
 game\view\views\AssessView.lua
 game\view\views\WisdomView.lua
 game\view\views\SettingsView.lua
+game\view\views\TacticsView.lua
 
 # --- 命令，然后组合根 ---
 core\Command.lua

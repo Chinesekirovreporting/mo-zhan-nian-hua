@@ -1,0 +1,254 @@
+<Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/..\FrameXML\UI.xsd">
+	<!-- 子窗口：战术绘画板。笔画在 game/view/views/TacticsView.lua 里随数据生成。 -->
+	<Frame name="MZPageTactics" parent="MZMainContent" inherits="MZPageTemplate" hidden="true"/>
+
+	<Frame name="MZTacticsChrome" parent="MZPageTactics">
+		<Anchors>
+			<Anchor point="TOPLEFT" relativeTo="MZPageTacticsBody"/>
+			<Anchor point="BOTTOMRIGHT" relativeTo="MZPageTacticsBody"/>
+		</Anchors>
+		<Frames>
+			<Button name="MZTacticsToolP" inherits="MZButtonTemplate" text="画笔">
+				<Size x="46" y="24"/>
+				<Anchors>
+					<Anchor point="TOPLEFT"/>
+				</Anchors>
+			</Button>
+			<Button name="MZTacticsToolL" inherits="MZButtonTemplate" text="直线">
+				<Size x="46" y="24"/>
+				<Anchors>
+					<Anchor point="LEFT" relativeTo="MZTacticsToolP" relativePoint="RIGHT" x="4" y="0"/>
+				</Anchors>
+			</Button>
+			<Button name="MZTacticsToolA" inherits="MZButtonTemplate" text="箭头">
+				<Size x="46" y="24"/>
+				<Anchors>
+					<Anchor point="LEFT" relativeTo="MZTacticsToolL" relativePoint="RIGHT" x="4" y="0"/>
+				</Anchors>
+			</Button>
+			<Button name="MZTacticsToolR" inherits="MZButtonTemplate" text="方框">
+				<Size x="46" y="24"/>
+				<Anchors>
+					<Anchor point="LEFT" relativeTo="MZTacticsToolA" relativePoint="RIGHT" x="4" y="0"/>
+				</Anchors>
+			</Button>
+			<Button name="MZTacticsToolE" inherits="MZButtonTemplate" text="椭圆">
+				<Size x="46" y="24"/>
+				<Anchors>
+					<Anchor point="LEFT" relativeTo="MZTacticsToolR" relativePoint="RIGHT" x="4" y="0"/>
+				</Anchors>
+			</Button>
+			<Button name="MZTacticsToolT" inherits="MZButtonTemplate" text="文字">
+				<Size x="46" y="24"/>
+				<Anchors>
+					<Anchor point="LEFT" relativeTo="MZTacticsToolE" relativePoint="RIGHT" x="4" y="0"/>
+				</Anchors>
+			</Button>
+
+			<Button name="MZTacticsColor1" enableMouse="true">
+				<Size x="18" y="18"/>
+				<Anchors>
+					<Anchor point="TOPLEFT" x="0" y="-30"/>
+				</Anchors>
+				<Layers>
+					<Layer level="BACKGROUND">
+						<Texture name="$parentBg" file="Interface\ChatFrame\ChatFrameBackground" setAllPoints="true"/>
+					</Layer>
+					<Layer level="OVERLAY">
+						<Texture name="$parentMark" file="Interface\ChatFrame\ChatFrameBackground">
+							<Size y="2"/>
+							<Anchors>
+								<Anchor point="BOTTOMLEFT"/>
+								<Anchor point="BOTTOMRIGHT"/>
+							</Anchors>
+							<Color r="0.106" g="0.098" b="0.086" a="1"/>
+						</Texture>
+					</Layer>
+				</Layers>
+			</Button>
+			<Button name="MZTacticsColor2" enableMouse="true">
+				<Size x="18" y="18"/>
+				<Anchors>
+					<Anchor point="LEFT" relativeTo="MZTacticsColor1" relativePoint="RIGHT" x="4" y="0"/>
+				</Anchors>
+				<Layers>
+					<Layer level="BACKGROUND">
+						<Texture name="$parentBg" file="Interface\ChatFrame\ChatFrameBackground" setAllPoints="true"/>
+					</Layer>
+					<Layer level="OVERLAY">
+						<Texture name="$parentMark" file="Interface\ChatFrame\ChatFrameBackground">
+							<Size y="2"/>
+							<Anchors>
+								<Anchor point="BOTTOMLEFT"/>
+								<Anchor point="BOTTOMRIGHT"/>
+							</Anchors>
+							<Color r="0.106" g="0.098" b="0.086" a="1"/>
+						</Texture>
+					</Layer>
+				</Layers>
+			</Button>
+			<Button name="MZTacticsColor3" enableMouse="true">
+				<Size x="18" y="18"/>
+				<Anchors>
+					<Anchor point="LEFT" relativeTo="MZTacticsColor2" relativePoint="RIGHT" x="4" y="0"/>
+				</Anchors>
+				<Layers>
+					<Layer level="BACKGROUND">
+						<Texture name="$parentBg" file="Interface\ChatFrame\ChatFrameBackground" setAllPoints="true"/>
+					</Layer>
+					<Layer level="OVERLAY">
+						<Texture name="$parentMark" file="Interface\ChatFrame\ChatFrameBackground">
+							<Size y="2"/>
+							<Anchors>
+								<Anchor point="BOTTOMLEFT"/>
+								<Anchor point="BOTTOMRIGHT"/>
+							</Anchors>
+							<Color r="0.106" g="0.098" b="0.086" a="1"/>
+						</Texture>
+					</Layer>
+				</Layers>
+			</Button>
+			<Button name="MZTacticsColor4" enableMouse="true">
+				<Size x="18" y="18"/>
+				<Anchors>
+					<Anchor point="LEFT" relativeTo="MZTacticsColor3" relativePoint="RIGHT" x="4" y="0"/>
+				</Anchors>
+				<Layers>
+					<Layer level="BACKGROUND">
+						<Texture name="$parentBg" file="Interface\ChatFrame\ChatFrameBackground" setAllPoints="true"/>
+					</Layer>
+					<Layer level="OVERLAY">
+						<Texture name="$parentMark" file="Interface\ChatFrame\ChatFrameBackground">
+							<Size y="2"/>
+							<Anchors>
+								<Anchor point="BOTTOMLEFT"/>
+								<Anchor point="BOTTOMRIGHT"/>
+							</Anchors>
+							<Color r="0.106" g="0.098" b="0.086" a="1"/>
+						</Texture>
+					</Layer>
+				</Layers>
+			</Button>
+			<Button name="MZTacticsColor5" enableMouse="true">
+				<Size x="18" y="18"/>
+				<Anchors>
+					<Anchor point="LEFT" relativeTo="MZTacticsColor4" relativePoint="RIGHT" x="4" y="0"/>
+				</Anchors>
+				<Layers>
+					<Layer level="BACKGROUND">
+						<Texture name="$parentBg" file="Interface\ChatFrame\ChatFrameBackground" setAllPoints="true"/>
+					</Layer>
+					<Layer level="OVERLAY">
+						<Texture name="$parentMark" file="Interface\ChatFrame\ChatFrameBackground">
+							<Size y="2"/>
+							<Anchors>
+								<Anchor point="BOTTOMLEFT"/>
+								<Anchor point="BOTTOMRIGHT"/>
+							</Anchors>
+							<Color r="0.106" g="0.098" b="0.086" a="1"/>
+						</Texture>
+					</Layer>
+				</Layers>
+			</Button>
+
+			<Button name="MZTacticsClear" inherits="MZButtonTemplate" text="清空">
+				<Size x="52" y="24"/>
+				<Anchors>
+					<Anchor point="TOPRIGHT" x="0" y="-28"/>
+				</Anchors>
+			</Button>
+			<Button name="MZTacticsUndo" inherits="MZButtonTemplate" text="撤销">
+				<Size x="52" y="24"/>
+				<Anchors>
+					<Anchor point="RIGHT" relativeTo="MZTacticsClear" relativePoint="LEFT" x="-4" y="0"/>
+				</Anchors>
+			</Button>
+			<Button name="MZTacticsPenBtn" inherits="MZButtonTemplate" text="拿笔">
+				<Size x="52" y="24"/>
+				<Anchors>
+					<Anchor point="RIGHT" relativeTo="MZTacticsUndo" relativePoint="LEFT" x="-4" y="0"/>
+				</Anchors>
+			</Button>
+
+			<Frame name="MZTacticsPenHost">
+				<Size y="18"/>
+				<Anchors>
+					<Anchor point="LEFT" relativeTo="MZTacticsColor5" relativePoint="RIGHT" x="8" y="0"/>
+					<Anchor point="RIGHT" relativeTo="MZTacticsPenBtn" relativePoint="LEFT" x="-8" y="0"/>
+				</Anchors>
+				<Layers>
+					<Layer level="OVERLAY">
+						<FontString name="MZTacticsPen" inherits="GameFontHighlight" justifyH="LEFT" justifyV="MIDDLE" text="笔闲着">
+							<Anchors>
+								<Anchor point="LEFT"/>
+								<Anchor point="RIGHT"/>
+							</Anchors>
+							<Color r="0.278" g="0.259" b="0.227"/>
+						</FontString>
+					</Layer>
+				</Layers>
+			</Frame>
+
+			<EditBox name="MZTacticsText" inherits="MZEditBoxTemplate" letters="72">
+				<Size x="220" y="24"/>
+				<Anchors>
+					<Anchor point="TOPLEFT" x="0" y="-56"/>
+				</Anchors>
+			</EditBox>
+			<Button name="MZTacticsTextOk" inherits="MZButtonTemplate" text="写下">
+				<Size x="52" y="24"/>
+				<Anchors>
+					<Anchor point="LEFT" relativeTo="MZTacticsText" relativePoint="RIGHT" x="6" y="0"/>
+				</Anchors>
+			</Button>
+
+			<Frame name="MZTacticsCanvas" enableMouse="true">
+				<Anchors>
+					<Anchor point="TOPLEFT" x="0" y="-88"/>
+					<Anchor point="BOTTOMRIGHT"/>
+				</Anchors>
+				<Layers>
+					<Layer level="BACKGROUND">
+						<Texture name="$parentBg" file="Interface\ChatFrame\ChatFrameBackground" setAllPoints="true">
+							<Color r="0.949" g="0.925" b="0.867" a="1"/>
+						</Texture>
+					</Layer>
+					<Layer level="BORDER">
+						<Texture file="Interface\ChatFrame\ChatFrameBackground">
+							<Size y="1"/>
+							<Anchors>
+								<Anchor point="TOPLEFT"/>
+								<Anchor point="TOPRIGHT"/>
+							</Anchors>
+							<Color r="0.106" g="0.098" b="0.086" a="0.55"/>
+						</Texture>
+						<Texture file="Interface\ChatFrame\ChatFrameBackground">
+							<Size y="1"/>
+							<Anchors>
+								<Anchor point="BOTTOMLEFT"/>
+								<Anchor point="BOTTOMRIGHT"/>
+							</Anchors>
+							<Color r="0.106" g="0.098" b="0.086" a="0.55"/>
+						</Texture>
+						<Texture file="Interface\ChatFrame\ChatFrameBackground">
+							<Size x="1"/>
+							<Anchors>
+								<Anchor point="TOPLEFT"/>
+								<Anchor point="BOTTOMLEFT"/>
+							</Anchors>
+							<Color r="0.106" g="0.098" b="0.086" a="0.55"/>
+						</Texture>
+						<Texture file="Interface\ChatFrame\ChatFrameBackground">
+							<Size x="1"/>
+							<Anchors>
+								<Anchor point="TOPRIGHT"/>
+								<Anchor point="BOTTOMRIGHT"/>
+							</Anchors>
+							<Color r="0.106" g="0.098" b="0.086" a="0.55"/>
+						</Texture>
+					</Layer>
+				</Layers>
+			</Frame>
+		</Frames>
+	</Frame>
+</Ui>

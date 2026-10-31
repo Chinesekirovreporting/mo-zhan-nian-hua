@@ -2,6 +2,7 @@
 -- GameModules · 逻辑侧门面
 -- 界面和命令只从这里拿模块，不直接碰 game/module 里的单例。
 --   Checkers  六角跳棋。房主权威 + 全量快照，明文 H/B/C/Q/W/P/E/R
+--   Tactics   战术绘画板。队长发笔，明文 D|，只走队伍频道
 --   Wisdom    智慧树。公会园丁记账，明文 Z，只走公会频道
 --   Dkp       公会积分。名册向服务器拉，分数留在本机存档
 --   Timer     开怪倒计时。可见公告，不同步状态
@@ -12,10 +13,11 @@ local ADDON_NAME, MZ = ...
 local App = MZ.App
 
 local M = App._modules
-assert(M.Checkers and M.Wisdom and M.Dkp and M.Timer and M.Roster and M.Assess, "GameModules: 逻辑模块未就绪")
+assert(M.Checkers and M.Tactics and M.Wisdom and M.Dkp and M.Timer and M.Roster and M.Assess, "GameModules: 逻辑模块未就绪")
 
 local GameModules = {
 	Checkers = M.Checkers,
+	Tactics  = M.Tactics,
 	Wisdom   = M.Wisdom,
 	Dkp      = M.Dkp,
 	Timer    = M.Timer,

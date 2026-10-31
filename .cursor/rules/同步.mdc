@@ -12,8 +12,8 @@ alwaysApply: false
 flowchart LR
   ModuleSync["Module:sync"] --> View
   Click["点击或心跳"] --> Host["房主裁决"]
-  Host --> Plain["明文 H/B/C/Q/W/P/E/R"]
-  Plain --> NetSend["Net:Send"]
+  Host --> Plain["跳棋明文或战术 D|"]
+  Plain --> NetSend["Net:Send 或 SendTo"]
   Blizzard["暴雪名册接口"] --> ModulePull["List 或 ScanGuild"]
   ModulePull --> View
 ```
@@ -24,13 +24,17 @@ flowchart LR
 
 ## 房主线
 
-只有跳棋。频道由 `NetManager:Channels` 决定：有团队用 `RAID`，否则 `PARTY`，都没有才 `INSTANCE_CHAT`，在公会时再追加 `GUILD`。前缀 `MZCHK`。广播，不是点对点。
+跳棋和战术绘画板。前缀都是 `MZCHK`。广播，不是点对点。
 
-非房主发 `Q`，本机不改棋盘。房主 `ApplyMove` 之后广播整份 `H`（座位、阶段）和 `B`（棋盘）。座位 `C` 各端先落地，快照再纠偏。字母不改成 `~S`。
+跳棋的频道由 `NetManager:Channels` 决定：有团队用 `RAID`，否则 `PARTY`，都没有才 `INSTANCE_CHAT`，在公会时再追加 `GUILD`。非房主发 `Q`，本机不改棋盘。房主 `ApplyMove` 之后广播整份 `H`（座位、阶段）和 `B`（棋盘）。座位 `C` 各端先落地，快照再纠偏。字母是 `H/B/C/Q/W/P/E/R`，不改成 `~S`。
 
-插件消息会丢、会重复、会乱序。旧序号丢掉。只有 `Q|` 去重，状态包重复无害。`Send` 的正文不以 `~` 开头。收包不进 `EventManager`。自己发出的包直接丢掉。
+战术绘画板只走一个队伍频道，调用 `Net:SendTo`，不进公会，不进 `MoZhanNianHuaDB`。离开队伍或进入队伍都清空。队长（`UnitIsGroupLeader`）裁决。正文以 `D|` 开头：`D|Q` 要笔、放笔、交笔画、撤销、清空；`D|K` 笔权；`D|S` 一笔；`D|U` 撤销；`D|X` 清空；`D|R` 要快照；`D|H` 全量。持笔人松手后可以先在本机画上这一笔，等队长的 `D|S` 对上；对不上就撤掉并重发一次。不是持笔人的端不改画布。跳棋字母不动。
 
-时机：点击（入座、准备、走子、开局）才发包。逻辑先攒到 1 秒。观战 `W`、在座 `P`、补报入座间隔 8 秒。房主全量广播间隔 4 秒。非房主约每 2 秒发 `R` 或 `R|序号`。帧回调只抽发送队列（间隔 0.12 秒，队列上限 60），不按帧同步。
+插件消息会丢、会重复、会乱序。旧序号丢掉。跳棋只有 `Q|` 去重，战术画板只有 `D|Q|` 去重，状态包重复无害。`Send` 的正文不以 `~` 开头。收包不进 `EventManager`。自己发出的包直接丢掉。
+
+跳棋时机：点击（入座、准备、走子、开局）才发包。逻辑先攒到 1 秒。观战 `W`、在座 `P`、补报入座间隔 8 秒。房主全量广播间隔 4 秒。非房主约每 2 秒发 `R` 或 `R|序号`。帧回调只抽发送队列（间隔 0.12 秒，队列上限 60），不按帧同步。
+
+战术画板时机：松手、拿笔、放笔、撤销、清空才发包。队长每 4 秒发 `D|K`。别人只在序号落后时发 `D|R`，队长至少隔 4 秒才排一次 `D|H`，而且每秒只发出一片，避免撑满 60 条队列。不按帧同步笔画。
 
 锁步不采用。没有共同帧时钟，少一个人的包不能停住全桌。
 
@@ -84,8 +88,20 @@ App.eventManager:on(App.GlobalEvents.CHECKERS_CHANGED, function()
 end)
 ```
 
-反例：跳棋快照改走结构化包。棋盘仍是明文 `H` 加 `B`。
+反例：跳棋快照改走结构化包。棋盘仍是明文 `H` 加 `B`。战术画板同样不走 `~S`。
 
 ```lua
 App.Core.Net:SendSnapshot("board", board)
+```
+
+正例：战术画板不在队伍里就本机落笔。在队伍里且自己不是队长时，只发 `D|Q`。
+
+```lua
+function TacticsModule:SubmitStroke(tool, color, points, text)
+	if not self:InGroup() or self:IsLeader() then
+		return self:CommitLocal(tool, color, points, text)
+	end
+	self:Send("D|Q|S|...")
+	return true
+end
 ```

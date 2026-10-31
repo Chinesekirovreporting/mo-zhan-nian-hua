@@ -281,11 +281,46 @@
 		</HighlightTexture>
 	</Button>
 
-	<Button name="MZTabWisdom" parent="MZMainTabArea" text="智慧树" enableMouse="true">
+	<Button name="MZTabTactics" parent="MZMainTabArea" text="战术绘画板" enableMouse="true">
 		<Size y="34"/>
 		<Anchors>
 			<Anchor point="TOPLEFT" relativeTo="MZTabCheckers" relativePoint="BOTTOMLEFT" x="0" y="-6"/>
 			<Anchor point="TOPRIGHT" relativeTo="MZTabCheckers" relativePoint="BOTTOMRIGHT" x="0" y="-6"/>
+		</Anchors>
+		<Layers>
+			<Layer level="BACKGROUND">
+				<Texture name="$parentBg" file="Interface\ChatFrame\ChatFrameBackground" setAllPoints="true">
+					<Color r="0.902" g="0.871" b="0.792" a="0"/>
+				</Texture>
+			</Layer>
+			<Layer level="ARTWORK">
+				<Texture name="$parentBar" file="Interface\ChatFrame\ChatFrameBackground">
+					<Size x="3"/>
+					<Anchors>
+						<Anchor point="TOPLEFT"/>
+						<Anchor point="BOTTOMLEFT"/>
+					</Anchors>
+					<Color r="0.702" g="0.196" b="0.157" a="1"/>
+				</Texture>
+			</Layer>
+		</Layers>
+		<ButtonText>
+			<Anchors>
+				<Anchor point="LEFT" x="14" y="0"/>
+			</Anchors>
+		</ButtonText>
+		<NormalFont style="GameFontNormal"/>
+		<NormalTextColor r="0.278" g="0.259" b="0.227"/>
+		<HighlightTexture file="Interface\ChatFrame\ChatFrameBackground" alphaMode="ADD">
+			<Color r="1" g="1" b="1" a="0"/>
+		</HighlightTexture>
+	</Button>
+
+	<Button name="MZTabWisdom" parent="MZMainTabArea" text="智慧树" enableMouse="true">
+		<Size y="34"/>
+		<Anchors>
+			<Anchor point="TOPLEFT" relativeTo="MZTabTactics" relativePoint="BOTTOMLEFT" x="0" y="-6"/>
+			<Anchor point="TOPRIGHT" relativeTo="MZTabTactics" relativePoint="BOTTOMRIGHT" x="0" y="-6"/>
 		</Anchors>
 		<Layers>
 			<Layer level="BACKGROUND">
